@@ -19,10 +19,10 @@ const SwimmingSchedule = () => {
     fallback: '06:00',
   });
   const [filters, setFilters] = useState<FilterOptions>({
-    daySelect: '',
-    ageGroupSelect: '',
-    genderSelect: '',
-    eventTypeSelect: '',
+    daySelect: 'all',
+    ageGroupSelect: 'all',
+    genderSelect: 'all',
+    eventTypeSelect: 'all',
   });
 
   // 計算篩選選項
@@ -61,10 +61,10 @@ const SwimmingSchedule = () => {
 
     // 應用篩選
     let filtered = updatedGroups;
-    if (filters.daySelect) filtered = filtered.filter(g => g.dayKey === filters.daySelect);
-    if (filters.ageGroupSelect) filtered = filtered.filter(g => g.ageGroup === filters.ageGroupSelect);
-    if (filters.genderSelect) filtered = filtered.filter(g => g.gender === filters.genderSelect);
-    if (filters.eventTypeSelect) filtered = filtered.filter(g => g.eventType === filters.eventTypeSelect);
+    if (filters.daySelect && filters.daySelect !== 'all') filtered = filtered.filter(g => g.dayKey === filters.daySelect);
+    if (filters.ageGroupSelect && filters.ageGroupSelect !== 'all') filtered = filtered.filter(g => g.ageGroup === filters.ageGroupSelect);
+    if (filters.genderSelect && filters.genderSelect !== 'all') filtered = filtered.filter(g => g.gender === filters.genderSelect);
+    if (filters.eventTypeSelect && filters.eventTypeSelect !== 'all') filtered = filtered.filter(g => g.eventType === filters.eventTypeSelect);
 
     // 計算時間
     let cursor: Date | null = null;

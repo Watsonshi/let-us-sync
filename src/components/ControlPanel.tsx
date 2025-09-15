@@ -85,8 +85,8 @@ export const ControlPanel = ({
               <SelectTrigger className="h-9">
                 <SelectValue placeholder="全部" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">全部</SelectItem>
+              <SelectContent className="bg-background border border-border shadow-lg z-50">
+                <SelectItem value="all">全部</SelectItem>
                 <SelectItem value="d1">第一天（114/09/19，五：1–28）</SelectItem>
                 <SelectItem value="d2">第二天（114/09/20，六：29–82）</SelectItem>
                 <SelectItem value="d3">第三天（114/09/21，日：83–136）</SelectItem>
@@ -103,8 +103,8 @@ export const ControlPanel = ({
               <SelectTrigger className="h-9">
                 <SelectValue placeholder="全部年齡組" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">全部年齡組</SelectItem>
+              <SelectContent className="bg-background border border-border shadow-lg z-50">
+                <SelectItem value="all">全部年齡組</SelectItem>
                 {ageGroups.map((age) => (
                   <SelectItem key={age} value={age}>{age}</SelectItem>
                 ))}
@@ -121,8 +121,8 @@ export const ControlPanel = ({
               <SelectTrigger className="h-9">
                 <SelectValue placeholder="全部性別" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">全部性別</SelectItem>
+              <SelectContent className="bg-background border border-border shadow-lg z-50">
+                <SelectItem value="all">全部性別</SelectItem>
                 {genders.map((gender) => (
                   <SelectItem key={gender} value={gender}>{gender}</SelectItem>
                 ))}
@@ -139,8 +139,8 @@ export const ControlPanel = ({
               <SelectTrigger className="h-9">
                 <SelectValue placeholder="全部項目" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">全部項目</SelectItem>
+              <SelectContent className="bg-background border border-border shadow-lg z-50">
+                <SelectItem value="all">全部項目</SelectItem>
                 {eventTypes.map((eventType) => (
                   <SelectItem key={eventType} value={eventType}>{eventType}</SelectItem>
                 ))}
