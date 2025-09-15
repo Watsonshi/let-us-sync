@@ -5,7 +5,7 @@ import { ControlPanel } from '@/components/ControlPanel';
 import { FileUpload } from '@/components/FileUpload';
 import { ScheduleTable } from '@/components/ScheduleTable';
 import { SwimGroup, ScheduleConfig, FilterOptions } from '@/types/swimming';
-import { parseExcelFile } from '@/utils/excelUtils';
+import { parseExcelFile, buildGroupsFromRows } from '@/utils/excelUtils';
 import { parseMmSs, parseTimeInputToDate, moveOutOfLunch, addSecondsSkippingLunch, advanceCursor } from '@/utils/timeUtils';
 import { Waves, Timer } from 'lucide-react';
 
@@ -131,6 +131,26 @@ const SwimmingSchedule = () => {
   const handleLoadDefault = async () => {
     try {
       setIsLoading(true);
+      
+      // 優先嘗試載入JSON格式的預設資料
+      try {
+        const jsonResponse = await fetch('/sample-data.json');
+        if (jsonResponse.ok) {
+          const jsonData = await jsonResponse.json();
+          const fallback = parseMmSs(config.fallback) ?? 360;
+          const newGroups = buildGroupsFromRows(jsonData, fallback);
+          setGroups(newGroups);
+          toast({
+            title: "預設賽程載入成功",
+            description: `成功載入 ${newGroups.length} 組比賽資料`,
+          });
+          return;
+        }
+      } catch (jsonError) {
+        console.log('JSON載入失敗，嘗試Excel:', jsonError);
+      }
+      
+      // 如果JSON載入失敗，嘗試Excel文件
       const response = await fetch('/解析結果.xlsx');
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -143,12 +163,15 @@ const SwimmingSchedule = () => {
         description: "已成功載入游泳比賽賽程資料",
       });
     } catch (error) {
-      console.error('載入預設Excel失敗:', error);
+      console.error('載入預設資料失敗:', error);
       let errorMsg = `載入預設賽程失敗：${error instanceof Error ? error.message : '未知錯誤'}`;
       
-      if (error instanceof Error && 
-          (error.message.includes('Failed to fetch') || error.message.includes('NetworkError'))) {
-        errorMsg += '\n\n可能原因：\n1. 請確認同目錄下有 解析結果.xlsx 檔案\n2. 如果是本地開啟，請使用 HTTP 服務器';
+      if (error instanceof Error) {
+        if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+          errorMsg += '\n\n可能原因：\n1. 網路連線問題\n2. 預設資料檔案缺失';
+        } else if (error.message.includes('找不到標題列')) {
+          errorMsg += '\n\n可能原因：\n1. Excel檔案格式不正確\n2. 檔案內容損壞或為空';
+        }
       }
       
       toast({
