@@ -140,9 +140,17 @@ const SwimmingSchedule = () => {
           const fallback = parseMmSs(config.fallback) ?? 360;
           const newGroups = buildGroupsFromRows(jsonData, fallback);
           setGroups(newGroups);
+          
+          // 檢查是否資料完整（應該有136個項次）
+          const maxEventNo = Math.max(...newGroups.map(g => g.eventNo));
+          if (maxEventNo < 136) {
+            console.log(`載入的資料不完整，只有到第${maxEventNo}項次，嘗試從Excel載入...`);
+            throw new Error('JSON資料不完整');
+          }
+          
           toast({
             title: "預設賽程載入成功",
-            description: `成功載入 ${newGroups.length} 組比賽資料`,
+            description: `成功載入 ${newGroups.length} 組比賽資料（項次 1-${maxEventNo}）`,
           });
           return;
         }
