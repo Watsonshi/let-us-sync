@@ -132,43 +132,23 @@ const SwimmingSchedule = () => {
     try {
       setIsLoading(true);
       
-      // 優先嘗試載入JSON格式的預設資料
-      try {
-        const jsonResponse = await fetch('/sample-data.json');
-        if (jsonResponse.ok) {
-          const jsonData = await jsonResponse.json();
-          const fallback = parseMmSs(config.fallback) ?? 360;
-          const newGroups = buildGroupsFromRows(jsonData, fallback);
-          setGroups(newGroups);
-          
-          // 檢查是否資料完整（應該有136個項次）
-          const maxEventNo = Math.max(...newGroups.map(g => g.eventNo));
-          if (maxEventNo < 136) {
-            console.log(`載入的資料不完整，只有到第${maxEventNo}項次，嘗試從Excel載入...`);
-            throw new Error('JSON資料不完整');
-          }
-          
-          toast({
-            title: "預設賽程載入成功",
-            description: `成功載入 ${newGroups.length} 組比賽資料（項次 1-${maxEventNo}）`,
-          });
-          return;
-        }
-      } catch (jsonError) {
-        console.log('JSON載入失敗，嘗試Excel:', jsonError);
+      // 載入JSON格式的預設資料
+      const jsonResponse = await fetch('/sample-data.json');
+      if (!jsonResponse.ok) {
+        throw new Error(`HTTP ${jsonResponse.status}: ${jsonResponse.statusText}`);
       }
       
-      // 如果JSON載入失敗，嘗試Excel文件
-      const response = await fetch('/解析結果.xlsx');
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-      const blob = await response.blob();
-      const file = new File([blob], '解析結果.xlsx');
-      await handleFileSelect(file);
+      const jsonData = await jsonResponse.json();
+      const fallback = parseMmSs(config.fallback) ?? 360;
+      const newGroups = buildGroupsFromRows(jsonData, fallback);
+      setGroups(newGroups);
+      
+      // 檢查載入的項次範圍
+      const maxEventNo = Math.max(...newGroups.map(g => g.eventNo));
+      
       toast({
         title: "預設賽程載入成功",
-        description: "已成功載入游泳比賽賽程資料",
+        description: `成功載入 ${newGroups.length} 組比賽資料（項次 1-${maxEventNo}）`,
       });
     } catch (error) {
       console.error('載入預設資料失敗:', error);
@@ -177,8 +157,6 @@ const SwimmingSchedule = () => {
       if (error instanceof Error) {
         if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
           errorMsg += '\n\n可能原因：\n1. 網路連線問題\n2. 預設資料檔案缺失';
-        } else if (error.message.includes('找不到標題列')) {
-          errorMsg += '\n\n可能原因：\n1. Excel檔案格式不正確\n2. 檔案內容損壞或為空';
         }
       }
       
