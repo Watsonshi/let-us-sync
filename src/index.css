@@ -2,9 +2,35 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* 游泳比賽時間表設計系統 - 專業運動風格 */
+
+:root {
+  /* 主色調 - 游泳藍色系 */
+  --primary: 214 88% 27%;           /* 深海藍 */
+  --primary-foreground: 210 40% 98%;
+  --primary-light: 214 88% 45%;     /* 標準藍 */
+  --primary-glow: 214 100% 70%;     /* 亮藍光暈 */
+  
+  /* 運動主題漸變 */
+  --gradient-primary: linear-gradient(135deg, hsl(214 88% 27%), hsl(214 88% 45%));
+  --gradient-accent: linear-gradient(90deg, hsl(214 88% 45%), hsl(190 88% 45%));
+  --gradient-highlight: linear-gradient(45deg, hsl(45 100% 85%), hsl(45 100% 70%));
+  
+  /* 狀態色彩 */
+  --success: 142 76% 36%;           /* 完成綠 */
+  --warning: 45 100% 60%;           /* 進行中黃 */
+  --info: 214 88% 55%;              /* 資訊藍 */
+  
+  /* 陰影系統 */
+  --shadow-sm: 0 2px 4px -1px hsl(214 88% 27% / 0.1);
+  --shadow-md: 0 4px 12px -2px hsl(214 88% 27% / 0.15);
+  --shadow-lg: 0 8px 25px -5px hsl(214 88% 27% / 0.2);
+  --shadow-glow: 0 0 20px hsl(214 100% 70% / 0.3);
+  
+  /* 動畫 */
+  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --animation-pulse: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
 
 @layer base {
   :root {
@@ -17,7 +43,8 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 222.2 47.4% 11.2%;
+    /* 覆蓋 primary 顏色使用游泳主題 */
+    --primary: 214 88% 27%;
     --primary-foreground: 210 40% 98%;
 
     --secondary: 210 40% 96.1%;

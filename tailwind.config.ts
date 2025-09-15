@@ -14,6 +14,12 @@ export default {
     },
     extend: {
       colors: {
+        // 游泳主題色彩系統
+        'primary-light': 'hsl(var(--primary-light))',
+        'primary-glow': 'hsl(var(--primary-glow))',
+        'success': 'hsl(var(--success))',
+        'warning': 'hsl(var(--warning))',
+        'info': 'hsl(var(--info))',
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -57,6 +63,17 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+      },
+      backgroundImage: {
+        'gradient-primary': 'var(--gradient-primary)',
+        'gradient-accent': 'var(--gradient-accent)',
+        'gradient-highlight': 'var(--gradient-highlight)',
+      },
+      boxShadow: {
+        'custom-sm': 'var(--shadow-sm)',
+        'custom-md': 'var(--shadow-md)',
+        'custom-lg': 'var(--shadow-lg)',
+        'custom-glow': 'var(--shadow-glow)',
       },
       borderRadius: {
         lg: "var(--radius)",
