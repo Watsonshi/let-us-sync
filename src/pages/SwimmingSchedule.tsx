@@ -131,13 +131,12 @@ const SwimmingSchedule = () => {
   const handleLoadDefault = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('/解析結果.xlsx');
+      const response = await fetch('/sample-data.json');
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
-      const blob = await response.blob();
-      const file = new File([blob], '解析結果.xlsx');
-      await handleFileSelect(file);
+      const jsonData = await response.json();
+      setGroups(jsonData);
       toast({
         title: "預設賽程載入成功",
         description: "已成功載入游泳比賽賽程資料",
