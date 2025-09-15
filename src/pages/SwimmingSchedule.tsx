@@ -131,7 +131,7 @@ const SwimmingSchedule = () => {
   const handleLoadDefault = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('解析結果.xlsx');
+      const response = await fetch('/解析結果.xlsx');
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
