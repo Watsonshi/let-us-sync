@@ -139,12 +139,19 @@ const SwimmingSchedule = () => {
       }
       
       const jsonData = await jsonResponse.json();
+      console.log('JSON資料筆數:', jsonData.length);
+      console.log('JSON前5筆:', jsonData.slice(0, 5));
+      console.log('JSON項次範圍:', Math.min(...jsonData.map((d: any) => parseInt(d.項次))), '-', Math.max(...jsonData.map((d: any) => parseInt(d.項次))));
+      
       const fallback = parseMmSs(config.fallback) ?? 360;
       const newGroups = buildGroupsFromRows(jsonData, fallback);
+      console.log('解析後組別數:', newGroups.length);
+      console.log('解析後前5組:', newGroups.slice(0, 5));
       setGroups(newGroups);
       
       // 檢查載入的項次範圍
       const maxEventNo = Math.max(...newGroups.map(g => g.eventNo));
+      console.log('最大項次:', maxEventNo);
       
       toast({
         title: "預設賽程載入成功",
