@@ -2,7 +2,7 @@ import { useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import { Upload, FileSpreadsheet } from 'lucide-react';
+import { Upload, FileSpreadsheet, Info } from 'lucide-react';
 
 interface FileUploadProps {
   onFileSelect: (file: File) => void;
@@ -27,10 +27,11 @@ export const FileUpload = ({ onFileSelect, onLoadDefault, isLoading }: FileUploa
           <Button
             onClick={onLoadDefault}
             disabled={isLoading}
-            className="bg-gradient-primary hover:shadow-custom-glow transition-all duration-300 flex items-center gap-2"
+            variant="outline"
+            className="flex items-center gap-2"
           >
-            <FileSpreadsheet className="w-4 h-4" />
-            {isLoading ? '載入中...' : '載入預設賽程'}
+            <Info className="w-4 h-4" />
+            檔案格式說明
           </Button>
           
           <span className="text-sm text-muted-foreground">或</span>
@@ -55,7 +56,7 @@ export const FileUpload = ({ onFileSelect, onLoadDefault, isLoading }: FileUploa
         </div>
         
         <p className="text-xs text-muted-foreground mt-3">
-          點擊「載入預設賽程」自動載入 <code className="bg-muted px-1 py-0.5 rounded">解析結果.xlsx</code>，或手動選擇其他Excel檔案。
+          選擇並上傳您的Excel賽程檔案（支援.xlsx或.csv格式）來開始使用動態時間表。
         </p>
       </CardContent>
     </Card>

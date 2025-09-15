@@ -10,7 +10,6 @@ import { parseMmSs, parseTimeInputToDate, moveOutOfLunch, addSecondsSkippingLunc
 import { Waves, Timer } from 'lucide-react';
 
 const SwimmingSchedule = () => {
-  console.log('SwimmingSchedule component rendering');
   const [groups, setGroups] = useState<SwimGroup[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [config, setConfig] = useState<ScheduleConfig>({
@@ -130,32 +129,11 @@ const SwimmingSchedule = () => {
   };
 
   const handleLoadDefault = async () => {
-    try {
-      setIsLoading(true);
-      const response = await fetch('解析結果.xlsx');
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-      const blob = await response.blob();
-      const file = new File([blob], '解析結果.xlsx');
-      await handleFileSelect(file);
-    } catch (error) {
-      console.error('載入預設Excel失敗:', error);
-      let errorMsg = `載入預設賽程失敗：${error instanceof Error ? error.message : '未知錯誤'}`;
-      
-      if (error instanceof Error && 
-          (error.message.includes('Failed to fetch') || error.message.includes('NetworkError'))) {
-        errorMsg += '\n\n可能原因：\n1. 請確認同目錄下有 解析結果.xlsx 檔案\n2. 如果是本地開啟，請使用 HTTP 服務器';
-      }
-      
-      toast({
-        title: "載入失敗",
-        description: errorMsg,
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    toast({
+      title: "需要上傳文件",
+      description: "請手動選擇並上傳您的Excel賽程文件（.xlsx或.csv格式）。",
+      variant: "default",
+    });
   };
 
   const handleActualEndChange = (groupIndex: number, time: string) => {
