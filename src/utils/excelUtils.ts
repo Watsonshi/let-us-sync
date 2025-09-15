@@ -2,7 +2,7 @@ import * as XLSX from 'xlsx';
 import { SwimGroup } from '@/types/swimming';
 import { parseMmSs } from './timeUtils';
 
-const REQUIRED_HEADERS = ['項次', '組次', '年齡組', '性別', '比賽項目', '水道', '姓名', '單位', '報名成績'];
+const REQUIRED_HEADERS = ['項次', '組次', '年齡組', '性別', '比賽項目', '姓名', '單位', '報名成績'];
 
 const DAY_RULES = [
   { key: 'd1', label: '第一天（114/09/19，五）', start: 1, end: 28 },
@@ -30,7 +30,7 @@ export const findHeaderIdx2D = (rows2D: any[][]): number => {
     for (const need of REQUIRED_HEADERS) {
       if (cols.includes(need)) hit++;
     }
-    if (hit >= 6) return i;
+    if (hit >= 5) return i;
   }
   return -1;
 };

@@ -129,11 +129,36 @@ const SwimmingSchedule = () => {
   };
 
   const handleLoadDefault = async () => {
-    toast({
-      title: "需要上傳文件",
-      description: "請手動選擇並上傳您的Excel賽程文件（.xlsx或.csv格式）。",
-      variant: "default",
-    });
+    try {
+      setIsLoading(true);
+      const response = await fetch('解析結果.xlsx');
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      const blob = await response.blob();
+      const file = new File([blob], '解析結果.xlsx');
+      await handleFileSelect(file);
+      toast({
+        title: "預設賽程載入成功",
+        description: "已成功載入游泳比賽賽程資料",
+      });
+    } catch (error) {
+      console.error('載入預設Excel失敗:', error);
+      let errorMsg = `載入預設賽程失敗：${error instanceof Error ? error.message : '未知錯誤'}`;
+      
+      if (error instanceof Error && 
+          (error.message.includes('Failed to fetch') || error.message.includes('NetworkError'))) {
+        errorMsg += '\n\n可能原因：\n1. 請確認同目錄下有 解析結果.xlsx 檔案\n2. 如果是本地開啟，請使用 HTTP 服務器';
+      }
+      
+      toast({
+        title: "載入失敗",
+        description: errorMsg,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleActualEndChange = (groupIndex: number, time: string) => {

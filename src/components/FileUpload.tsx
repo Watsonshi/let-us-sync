@@ -27,11 +27,10 @@ export const FileUpload = ({ onFileSelect, onLoadDefault, isLoading }: FileUploa
           <Button
             onClick={onLoadDefault}
             disabled={isLoading}
-            variant="outline"
-            className="flex items-center gap-2"
+            className="bg-gradient-primary hover:shadow-custom-glow transition-all duration-300 flex items-center gap-2"
           >
-            <Info className="w-4 h-4" />
-            檔案格式說明
+            <FileSpreadsheet className="w-4 h-4" />
+            {isLoading ? '載入中...' : '載入預設賽程'}
           </Button>
           
           <span className="text-sm text-muted-foreground">或</span>
@@ -56,7 +55,7 @@ export const FileUpload = ({ onFileSelect, onLoadDefault, isLoading }: FileUploa
         </div>
         
         <p className="text-xs text-muted-foreground mt-3">
-          選擇並上傳您的Excel賽程檔案（支援.xlsx或.csv格式）來開始使用動態時間表。
+          點擊「載入預設賽程」自動載入游泳比賽資料，或手動選擇其他Excel檔案（支援.xlsx或.csv格式）。
         </p>
       </CardContent>
     </Card>
