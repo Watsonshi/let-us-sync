@@ -10,6 +10,7 @@ import { parseMmSs, parseTimeInputToDate, moveOutOfLunch, addSecondsSkippingLunc
 import { Waves, Timer } from 'lucide-react';
 
 const SwimmingSchedule = () => {
+  console.log('SwimmingSchedule component rendering');
   const [groups, setGroups] = useState<SwimGroup[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [config, setConfig] = useState<ScheduleConfig>({
