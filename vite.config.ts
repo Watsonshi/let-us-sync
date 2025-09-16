@@ -5,6 +5,8 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
+  // Only set base path for GitHub Pages deployment, not for Lovable
+  base: process.env.GITHUB_ACTIONS ? "/swimming-schedule/" : "/",
   server: {
     host: "::",
     port: 8080,
