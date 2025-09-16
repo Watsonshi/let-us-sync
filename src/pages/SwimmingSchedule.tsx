@@ -121,20 +121,6 @@ const SwimmingSchedule = () => {
     
     // 新增選手篩選
     if (filters.playerSelect && filters.playerSelect !== 'all') {
-      console.log('選手篩選開始:', filters.playerSelect);
-      
-      // 檢查該選手的所有項目
-      const playerEvents = players.filter(p => p.playerName === filters.playerSelect);
-      console.log('該選手的所有項目:', playerEvents.map(p => `${p.ageGroup}-${p.gender}-${p.eventType}`));
-      
-      // 檢查賽程資料中有哪些年齡組
-      const scheduleAgeGroups = [...new Set(filtered.map(g => g.ageGroup))];
-      console.log('賽程中的年齡組:', scheduleAgeGroups);
-      
-      // 檢查是否有該選手年齡組的賽程
-      const playerAgeGroups = [...new Set(playerEvents.map(p => p.ageGroup))];
-      console.log('該選手的年齡組:', playerAgeGroups);
-      
       // 正規化項目名稱的函數（移除空格差異）
       const normalizeEventName = (eventName: string) => {
         return eventName.replace(/\s+/g, ''); // 移除所有空格
@@ -149,14 +135,8 @@ const SwimmingSchedule = () => {
           p.playerName === filters.playerSelect
         );
         
-        if (matchingPlayers.length > 0) {
-          console.log('找到匹配組別:', g.eventNo, g.ageGroup, g.gender, g.eventType);
-        }
-        
         return matchingPlayers.length > 0;
       });
-      
-      console.log('篩選後組別數:', filtered.length);
     }
 
     return filtered;
