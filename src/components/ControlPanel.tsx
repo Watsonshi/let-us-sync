@@ -2,7 +2,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { ScheduleConfig, FilterOptions } from '@/types/swimming';
+import { RotateCcw } from 'lucide-react';
 
 interface ControlPanelProps {
   config: ScheduleConfig;
@@ -23,10 +25,32 @@ export const ControlPanel = ({
   onConfigChange,
   onFilterChange,
 }: ControlPanelProps) => {
+  const resetFilters = () => {
+    onFilterChange({
+      daySelect: 'all',
+      ageGroupSelect: 'all',
+      genderSelect: 'all',
+      eventTypeSelect: 'all',
+    });
+  };
+
   return (
     <Card className="shadow-custom-md">
       <CardContent className="p-6">
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold">賽程設定與篩選</h3>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={resetFilters}
+              className="flex items-center gap-2"
+            >
+              <RotateCcw className="w-4 h-4" />
+              重置篩選
+            </Button>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
           {/* 配置設定 */}
           <div className="space-y-2">
             <Label htmlFor="turnover" className="text-sm font-medium">轉換秒數</Label>
@@ -146,6 +170,7 @@ export const ControlPanel = ({
                 ))}
               </SelectContent>
             </Select>
+          </div>
           </div>
         </div>
       </CardContent>

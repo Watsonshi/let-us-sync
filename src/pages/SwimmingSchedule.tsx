@@ -71,8 +71,12 @@ const SwimmingSchedule = () => {
     let currentDay = '';
 
     const getDayStartTime = (dayKey: string) => {
-      if (dayKey === 'd1') return '09:00';
-      return '08:15';
+      switch (dayKey) {
+        case 'd1': return '09:00';
+        case 'd2': return '08:15';
+        case 'd3': return '08:15';
+        default: return '08:15';
+      }
     };
 
     return filtered.map((g, i) => {
