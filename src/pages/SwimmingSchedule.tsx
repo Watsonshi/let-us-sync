@@ -121,15 +121,27 @@ const SwimmingSchedule = () => {
     
     // 新增選手篩選
     if (filters.playerSelect && filters.playerSelect !== 'all') {
+      console.log('選手篩選開始:', filters.playerSelect);
+      console.log('選手資料筆數:', players.length);
+      console.log('選手資料前3筆:', players.slice(0, 3));
+      
       filtered = filtered.filter(g => {
-        // 找到該組對應的選手資料
+        // 找到該組對應的選手資料，匹配年齡組、性別和比賽項目
         const matchingPlayers = players.filter(p => 
           p.ageGroup === g.ageGroup && 
           p.gender === g.gender && 
-          p.eventType === g.eventType
+          p.eventType === g.eventType &&
+          p.playerName === filters.playerSelect
         );
-        return matchingPlayers.some(p => p.playerName === filters.playerSelect);
+        
+        if (matchingPlayers.length > 0) {
+          console.log('找到匹配組別:', g.eventNo, g.ageGroup, g.gender, g.eventType);
+        }
+        
+        return matchingPlayers.length > 0;
       });
+      
+      console.log('篩選後組別數:', filtered.length);
     }
 
     return filtered;
