@@ -59,33 +59,13 @@ const SwimmingSchedule = () => {
       return g;
     });
 
-    // 應用篩選
-    let filtered = updatedGroups;
-    if (filters.daySelect && filters.daySelect !== 'all') filtered = filtered.filter(g => g.dayKey === filters.daySelect);
-    if (filters.ageGroupSelect && filters.ageGroupSelect !== 'all') filtered = filtered.filter(g => g.ageGroup === filters.ageGroupSelect);
-    if (filters.genderSelect && filters.genderSelect !== 'all') filtered = filtered.filter(g => g.gender === filters.genderSelect);
-    if (filters.eventTypeSelect && filters.eventTypeSelect !== 'all') filtered = filtered.filter(g => g.eventType === filters.eventTypeSelect);
-
-    // 按照項次和組次排序確保正確的時間順序
-    filtered = filtered.sort((a, b) => {
+    // 先對完整資料按照項次和組次排序
+    const allSorted = updatedGroups.sort((a, b) => {
       if (a.eventNo !== b.eventNo) return a.eventNo - b.eventNo;
       return a.heatNum - b.heatNum;
     });
 
-    // 調試：檢查篩選結果
-    console.log('篩選後的前5個項目:', filtered.slice(0, 5).map(g => ({
-      eventNo: g.eventNo,
-      heatNum: g.heatNum,
-      ageGroup: g.ageGroup,
-      gender: g.gender,
-      eventType: g.eventType,
-      dayKey: g.dayKey
-    })));
-
-    // 計算時間
-    let cursor: Date | null = null;
-    let currentDay = '';
-
+    // 先基於完整資料計算所有時間
     const getDayStartTime = (dayKey: string) => {
       switch (dayKey) {
         case 'd1': return '09:00';
@@ -95,15 +75,18 @@ const SwimmingSchedule = () => {
       }
     };
 
-    return filtered.map((g, i) => {
+    let cursor: Date | null = null;
+    let currentDay = '';
+    
+    const allWithTimes = allSorted.map((g, i) => {
       if (g.dayLabel && g.dayLabel !== currentDay) {
         currentDay = g.dayLabel;
         const dayStartTime = getDayStartTime(g.dayKey);
         cursor = parseTimeInputToDate(base, dayStartTime);
       }
 
-      if (i > 0 && filtered[i - 1].dayLabel === g.dayLabel) {
-        const prev = filtered[i - 1];
+      if (i > 0 && allSorted[i - 1].dayLabel === g.dayLabel) {
+        const prev = allSorted[i - 1];
         if (prev.actualEnd) {
           cursor = advanceCursor(prev.actualEnd, config.turnover, Ls, Le);
         }
@@ -124,6 +107,15 @@ const SwimmingSchedule = () => {
 
       return updatedGroup;
     });
+
+    // 然後應用篩選
+    let filtered = allWithTimes;
+    if (filters.daySelect && filters.daySelect !== 'all') filtered = filtered.filter(g => g.dayKey === filters.daySelect);
+    if (filters.ageGroupSelect && filters.ageGroupSelect !== 'all') filtered = filtered.filter(g => g.ageGroup === filters.ageGroupSelect);
+    if (filters.genderSelect && filters.genderSelect !== 'all') filtered = filtered.filter(g => g.gender === filters.genderSelect);
+    if (filters.eventTypeSelect && filters.eventTypeSelect !== 'all') filtered = filtered.filter(g => g.eventType === filters.eventTypeSelect);
+
+    return filtered;
   }, [groups, config, filters]);
 
   const handleFileSelect = async (file: File) => {
