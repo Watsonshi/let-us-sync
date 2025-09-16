@@ -50,8 +50,7 @@ export const FileUpload = ({ onFileSelect, onLoadDefault, onLoadPlayerList, isLo
           <Button
             onClick={onLoadPlayerList}
             disabled={isLoading}
-            variant="outline"
-            className="hover:shadow-custom-glow transition-all duration-300 flex items-center gap-2"
+            className="bg-gradient-secondary hover:shadow-custom-glow transition-all duration-300 flex items-center gap-2"
           >
             <FileSpreadsheet className="w-4 h-4" />
             {isLoading ? '載入中...' : '載入選手名單'}

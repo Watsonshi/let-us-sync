@@ -121,16 +121,10 @@ const SwimmingSchedule = () => {
     
     // 新增選手篩選
     if (filters.playerSelect && filters.playerSelect !== 'all') {
-      console.log('選手篩選開始:', filters.playerSelect);
-      
       // 正規化項目名稱的函數（移除空格差異）
       const normalizeEventName = (eventName: string) => {
         return eventName.replace(/\s+/g, ''); // 移除所有空格
       };
-      
-      // 先取得該選手的所有項目資料
-      const playerEvents = players.filter(p => p.playerName === filters.playerSelect);
-      console.log('該選手的所有項目:', playerEvents);
       
       filtered = filtered.filter(g => {
         // 使用正規化的項目名稱進行比較，並且要匹配組次
@@ -147,22 +141,11 @@ const SwimmingSchedule = () => {
           
           const heatMatch = g.heatNum === playerHeatNum && g.heatTotal === playerHeatTotal;
           
-          // 除錯輸出
-          if (playerNameMatch && ageGroupMatch && genderMatch && eventTypeMatch) {
-            console.log('組次比對:', {
-              player: `${p.heat} (${playerHeatNum}/${playerHeatTotal})`,
-              schedule: `${g.heatNum}/${g.heatTotal}`,
-              match: heatMatch
-            });
-          }
-          
           return ageGroupMatch && genderMatch && eventTypeMatch && playerNameMatch && heatMatch;
         });
         
         return matchingPlayers.length > 0;
       });
-      
-      console.log('篩選後組別數:', filtered.length);
     }
 
     return filtered;
@@ -200,14 +183,7 @@ const SwimmingSchedule = () => {
       }
       
       const csvContent = await response.text();
-      console.log('CSV 內容長度:', csvContent.length);
-      console.log('CSV 前200字元:', csvContent.substring(0, 200));
-      
       const playerData = parsePlayerCSV(csvContent);
-      console.log('解析後選手資料筆數:', playerData.length);
-      console.log('選手資料前3筆:', playerData.slice(0, 3));
-      console.log('選手名單:', getUniquePlayersFromCSV(playerData));
-      
       setPlayers(playerData);
       
       toast({

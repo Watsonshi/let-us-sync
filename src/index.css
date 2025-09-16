@@ -13,6 +13,7 @@
   
   /* 運動主題漸變 */
   --gradient-primary: linear-gradient(135deg, hsl(214 88% 27%), hsl(214 88% 45%));
+  --gradient-secondary: linear-gradient(135deg, hsl(190 88% 35%), hsl(190 88% 50%));
   --gradient-accent: linear-gradient(90deg, hsl(214 88% 45%), hsl(190 88% 45%));
   --gradient-highlight: linear-gradient(45deg, hsl(45 100% 85%), hsl(45 100% 70%));
   

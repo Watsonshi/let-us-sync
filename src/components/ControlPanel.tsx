@@ -53,21 +53,9 @@ export const ControlPanel = ({
               重置篩選
             </Button>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-9 gap-4">
-          {/* 配置設定 */}
-          <div className="space-y-2">
-            <Label htmlFor="turnover" className="text-sm font-medium">轉換秒數</Label>
-            <Input
-              id="turnover"
-              type="number"
-              min="0"
-              step="1"
-              value={config.turnover}
-              onChange={(e) => onConfigChange({ ...config, turnover: parseInt(e.target.value) || 10 })}
-              className="h-9"
-            />
-          </div>
-
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4">
+          {/* 配置設定 - 隱藏轉換秒數和無成績預設，但保留邏輯 */}
+          
           <div className="space-y-2">
             <Label htmlFor="lunchStart" className="text-sm font-medium">午休開始</Label>
             <Input
@@ -87,18 +75,6 @@ export const ControlPanel = ({
               value={config.lunchEnd}
               onChange={(e) => onConfigChange({ ...config, lunchEnd: e.target.value })}
               className="h-9"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="fallback" className="text-sm font-medium">無成績預設（mm:ss）</Label>
-            <Input
-              id="fallback"
-              type="text"
-              value={config.fallback}
-              onChange={(e) => onConfigChange({ ...config, fallback: e.target.value })}
-              className="h-9"
-              placeholder="06:00"
             />
           </div>
 
