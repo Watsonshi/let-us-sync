@@ -88,6 +88,7 @@ export const buildGroupsFromRows = (rows: Record<string, any>[], fallback: numbe
     const age = (r['年齡組'] ?? '').toString().trim();
     const gender = (r['性別'] ?? '').toString().trim();
     const eventType = (r['比賽項目'] ?? '').toString().trim();
+    const playerName = (r['姓名'] ?? '').toString().trim(); // 新增：取得選手姓名
     const tSec = parseMmSs((r['報名成績'] ?? '').toString().trim());
     
     const [numStr, totalStr] = heatStr.split('/');
@@ -105,7 +106,13 @@ export const buildGroupsFromRows = (rows: Record<string, any>[], fallback: numbe
         gender,
         eventType,
         times: [],
+        playerNames: [], // 新增：選手姓名列表
       });
+    }
+    
+    // 新增：收集選手姓名
+    if (playerName && !map.get(key).playerNames.includes(playerName)) {
+      map.get(key).playerNames.push(playerName);
     }
     
     if (tSec != null) {
