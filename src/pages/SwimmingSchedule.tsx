@@ -66,6 +66,12 @@ const SwimmingSchedule = () => {
     if (filters.genderSelect && filters.genderSelect !== 'all') filtered = filtered.filter(g => g.gender === filters.genderSelect);
     if (filters.eventTypeSelect && filters.eventTypeSelect !== 'all') filtered = filtered.filter(g => g.eventType === filters.eventTypeSelect);
 
+    // 按照項次和組次排序確保正確的時間順序
+    filtered = filtered.sort((a, b) => {
+      if (a.eventNo !== b.eventNo) return a.eventNo - b.eventNo;
+      return a.heatNum - b.heatNum;
+    });
+
     // 計算時間
     let cursor: Date | null = null;
     let currentDay = '';
