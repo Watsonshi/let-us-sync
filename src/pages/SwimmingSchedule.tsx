@@ -127,13 +127,22 @@ const SwimmingSchedule = () => {
       };
       
       filtered = filtered.filter(g => {
-        // 使用正規化的項目名稱進行比較
-        const matchingPlayers = players.filter(p => 
-          p.ageGroup === g.ageGroup && 
-          p.gender === g.gender && 
-          normalizeEventName(p.eventType) === normalizeEventName(g.eventType) &&
-          p.playerName === filters.playerSelect
-        );
+        // 使用正規化的項目名稱進行比較，並且要匹配組次
+        const matchingPlayers = players.filter(p => {
+          const ageGroupMatch = p.ageGroup === g.ageGroup;
+          const genderMatch = p.gender === g.gender;
+          const eventTypeMatch = normalizeEventName(p.eventType) === normalizeEventName(g.eventType);
+          const playerNameMatch = p.playerName === filters.playerSelect;
+          
+          // 解析組次資訊 (例如 "1/5" -> heatNum: 1, heatTotal: 5)
+          const heatParts = p.heat.split('/');
+          const playerHeatNum = parseInt(heatParts[0]);
+          const playerHeatTotal = parseInt(heatParts[1]);
+          
+          const heatMatch = g.heatNum === playerHeatNum && g.heatTotal === playerHeatTotal;
+          
+          return ageGroupMatch && genderMatch && eventTypeMatch && playerNameMatch && heatMatch;
+        });
         
         return matchingPlayers.length > 0;
       });
