@@ -25,7 +25,7 @@ const SwimmingSchedule = () => {
     ageGroupSelect: 'all',
     genderSelect: 'all',
     eventTypeSelect: 'all',
-    playerSearch: '', // 改為搜尋框
+    playerSelect: 'all', // 新增：選手篩選
   });
 
   // 計算篩選選項
@@ -119,9 +119,8 @@ const SwimmingSchedule = () => {
     if (filters.genderSelect && filters.genderSelect !== 'all') filtered = filtered.filter(g => g.gender === filters.genderSelect);
     if (filters.eventTypeSelect && filters.eventTypeSelect !== 'all') filtered = filtered.filter(g => g.eventType === filters.eventTypeSelect);
     
-    // 選手搜尋篩選
-    if (filters.playerSearch && filters.playerSearch.trim() !== '') {
-      const searchTerm = filters.playerSearch.trim().toLowerCase();
+    // 新增選手篩選
+    if (filters.playerSelect && filters.playerSelect !== 'all') {
       // 正規化項目名稱的函數（移除空格差異）
       const normalizeEventName = (eventName: string) => {
         return eventName.replace(/\s+/g, ''); // 移除所有空格
@@ -133,7 +132,7 @@ const SwimmingSchedule = () => {
           const ageGroupMatch = p.ageGroup === g.ageGroup;
           const genderMatch = p.gender === g.gender;
           const eventTypeMatch = normalizeEventName(p.eventType) === normalizeEventName(g.eventType);
-          const playerNameMatch = p.playerName.toLowerCase().includes(searchTerm);
+          const playerNameMatch = p.playerName === filters.playerSelect;
           
           // 解析組次資訊 (例如 "1/5" -> heatNum: 1, heatTotal: 5)
           const heatParts = p.heat.split('/');

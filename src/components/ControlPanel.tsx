@@ -33,7 +33,7 @@ export const ControlPanel = ({
       ageGroupSelect: 'all',
       genderSelect: 'all',
       eventTypeSelect: 'all',
-      playerSearch: '', // 改為搜尋框重置
+      playerSelect: 'all', // 新增：選手篩選重置
     });
   };
 
@@ -152,13 +152,21 @@ export const ControlPanel = ({
           </div>
 
           <div className="space-y-2">
-            <Label className="text-sm font-medium">選手搜尋</Label>
-            <Input
-              placeholder="輸入選手姓名搜尋..."
-              value={filters.playerSearch}
-              onChange={(e) => onFilterChange({ ...filters, playerSearch: e.target.value })}
-              className="h-9"
-            />
+            <Label className="text-sm font-medium">選手篩選</Label>
+            <Select 
+              value={filters.playerSelect} 
+              onValueChange={(value) => onFilterChange({ ...filters, playerSelect: value })}
+            >
+              <SelectTrigger className="h-9">
+                <SelectValue placeholder="全部選手" />
+              </SelectTrigger>
+              <SelectContent className="bg-background border border-border shadow-lg z-50 max-h-60 overflow-y-auto">
+                <SelectItem value="all">全部選手</SelectItem>
+                {players.map((player) => (
+                  <SelectItem key={player} value={player}>{player}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           </div>
         </div>
