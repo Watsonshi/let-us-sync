@@ -25,7 +25,8 @@ const SwimmingSchedule = () => {
     ageGroupSelect: 'all',
     genderSelect: 'all',
     eventTypeSelect: 'all',
-    playerSelect: 'all', // 新增：選手篩選
+    playerSelect: 'all',
+    playerSearch: '', // 選手名稱搜尋
   });
 
   // 計算篩選選項
@@ -119,7 +120,7 @@ const SwimmingSchedule = () => {
     if (filters.genderSelect && filters.genderSelect !== 'all') filtered = filtered.filter(g => g.gender === filters.genderSelect);
     if (filters.eventTypeSelect && filters.eventTypeSelect !== 'all') filtered = filtered.filter(g => g.eventType === filters.eventTypeSelect);
     
-    // 新增選手篩選
+    // 選手名單篩選（從載入的CSV檔案）
     if (filters.playerSelect && filters.playerSelect !== 'all') {
       // 正規化項目名稱的函數（移除空格差異）
       const normalizeEventName = (eventName: string) => {
@@ -135,6 +136,41 @@ const SwimmingSchedule = () => {
           const playerNameMatch = p.playerName === filters.playerSelect;
           
           // 解析組次資訊 (例如 "1/5" -> heatNum: 1, heatTotal: 5)
+          const heatParts = p.heat.split('/');
+          const playerHeatNum = parseInt(heatParts[0]);
+          const playerHeatTotal = parseInt(heatParts[1]);
+          
+          const heatMatch = g.heatNum === playerHeatNum && g.heatTotal === playerHeatTotal;
+          
+          return ageGroupMatch && genderMatch && eventTypeMatch && playerNameMatch && heatMatch;
+        });
+        
+        return matchingPlayers.length > 0;
+      });
+    }
+
+    // 選手名稱搜尋（模糊搜尋任何選手名稱）
+    if (filters.playerSearch && filters.playerSearch.trim() !== '') {
+      const searchTerm = filters.playerSearch.trim().toLowerCase();
+      filtered = filtered.filter(g => {
+        // 如果該組有選手姓名列表，則搜尋其中是否包含目標選手
+        if (g.playerNames && g.playerNames.length > 0) {
+          return g.playerNames.some(name => 
+            name.toLowerCase().includes(searchTerm)
+          );
+        }
+        
+        // 也從載入的選手資料中搜尋
+        const matchingPlayers = players.filter(p => {
+          const normalizeEventName = (eventName: string) => {
+            return eventName.replace(/\s+/g, '');
+          };
+          
+          const ageGroupMatch = p.ageGroup === g.ageGroup;
+          const genderMatch = p.gender === g.gender;
+          const eventTypeMatch = normalizeEventName(p.eventType) === normalizeEventName(g.eventType);
+          const playerNameMatch = p.playerName.toLowerCase().includes(searchTerm);
+          
           const heatParts = p.heat.split('/');
           const playerHeatNum = parseInt(heatParts[0]);
           const playerHeatTotal = parseInt(heatParts[1]);

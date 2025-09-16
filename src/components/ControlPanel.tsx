@@ -33,7 +33,8 @@ export const ControlPanel = ({
       ageGroupSelect: 'all',
       genderSelect: 'all',
       eventTypeSelect: 'all',
-      playerSelect: 'all', // 新增：選手篩選重置
+      playerSelect: 'all',
+      playerSearch: '', // 重置搜尋框
     });
   };
 
@@ -53,7 +54,7 @@ export const ControlPanel = ({
               重置篩選
             </Button>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-8 gap-4">
           {/* 配置設定 - 隱藏轉換秒數和無成績預設，但保留邏輯 */}
           
           <div className="space-y-2">
@@ -152,7 +153,7 @@ export const ControlPanel = ({
           </div>
 
           <div className="space-y-2">
-            <Label className="text-sm font-medium">選手篩選</Label>
+            <Label className="text-sm font-medium">選手名單篩選</Label>
             <Select 
               value={filters.playerSelect} 
               onValueChange={(value) => onFilterChange({ ...filters, playerSelect: value })}
@@ -167,6 +168,18 @@ export const ControlPanel = ({
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="playerSearch" className="text-sm font-medium">選手名稱搜尋</Label>
+            <Input
+              id="playerSearch"
+              type="text"
+              placeholder="輸入選手姓名"
+              value={filters.playerSearch}
+              onChange={(e) => onFilterChange({ ...filters, playerSearch: e.target.value })}
+              className="h-9"
+            />
           </div>
           </div>
         </div>

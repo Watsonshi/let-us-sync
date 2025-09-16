@@ -28,7 +28,8 @@ export interface FilterOptions {
   ageGroupSelect: string;
   genderSelect: string;
   eventTypeSelect: string;
-  playerSelect: string; // 新增：選手篩選
+  playerSelect: string; // 選手名單篩選
+  playerSearch: string; // 選手名稱搜尋
 }
 
 export interface PlayerData {
