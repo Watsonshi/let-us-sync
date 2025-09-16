@@ -123,12 +123,16 @@ const SwimmingSchedule = () => {
     if (filters.playerSelect && filters.playerSelect !== 'all') {
       console.log('選手篩選開始:', filters.playerSelect);
       console.log('選手資料筆數:', players.length);
-      console.log('選手資料前3筆:', players.slice(0, 3));
-      console.log('賽程資料前3筆:', filtered.slice(0, 3));
       
       // 檢查所有可能的匹配組合
       const playerEvents = players.filter(p => p.playerName === filters.playerSelect);
       console.log('該選手的所有項目:', playerEvents);
+      console.log('賽程資料前3筆:', filtered.slice(0, 3).map(g => ({
+        eventNo: g.eventNo,
+        ageGroup: g.ageGroup,
+        gender: g.gender,
+        eventType: g.eventType
+      })));
       
       filtered = filtered.filter(g => {
         // 找到該組對應的選手資料，匹配年齡組、性別和比賽項目
@@ -141,19 +145,6 @@ const SwimmingSchedule = () => {
         
         if (matchingPlayers.length > 0) {
           console.log('找到匹配組別:', g.eventNo, g.ageGroup, g.gender, g.eventType);
-        } else if (players.some(p => p.playerName === filters.playerSelect)) {
-          // 檢查是否是項目名稱不匹配
-          const samePlayerOtherEvents = players.filter(p => 
-            p.playerName === filters.playerSelect &&
-            p.ageGroup === g.ageGroup && 
-            p.gender === g.gender
-          );
-          if (samePlayerOtherEvents.length > 0) {
-            console.log('年齡組性別匹配但項目不匹配:', {
-              scheduleEvent: g.eventType,
-              playerEvents: samePlayerOtherEvents.map(p => p.eventType)
-            });
-          }
         }
         
         return matchingPlayers.length > 0;
