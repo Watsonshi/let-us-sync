@@ -72,6 +72,16 @@ const SwimmingSchedule = () => {
       return a.heatNum - b.heatNum;
     });
 
+    // 調試：檢查篩選結果
+    console.log('篩選後的前5個項目:', filtered.slice(0, 5).map(g => ({
+      eventNo: g.eventNo,
+      heatNum: g.heatNum,
+      ageGroup: g.ageGroup,
+      gender: g.gender,
+      eventType: g.eventType,
+      dayKey: g.dayKey
+    })));
+
     // 計算時間
     let cursor: Date | null = null;
     let currentDay = '';

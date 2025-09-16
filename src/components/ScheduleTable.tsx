@@ -39,34 +39,6 @@ export const ScheduleTable = ({ groups, onActualEndChange }: ScheduleTableProps)
     </tr>
   );
 
-  const renderSubHeader = () => (
-    <tr className="bg-secondary text-secondary-foreground text-sm font-medium">
-      <td className="px-4 py-2 border-r border-border">
-        <div className="flex items-center gap-2">
-          <Target className="w-4 h-4" />
-          項次
-        </div>
-      </td>
-      <td className="px-4 py-2 border-r border-border">組次</td>
-      <td className="px-4 py-2 border-r border-border">
-        <div className="flex items-center gap-2">
-          <Users className="w-4 h-4" />
-          年齡組
-        </div>
-      </td>
-      <td className="px-4 py-2 border-r border-border">性別</td>
-      <td className="px-4 py-2 border-r border-border">比賽項目</td>
-      <td className="px-4 py-2 border-r border-border">平均成績</td>
-      <td className="px-4 py-2 border-r border-border">
-        <div className="flex items-center gap-2">
-          <Clock className="w-4 h-4" />
-          預估開始
-        </div>
-      </td>
-      <td className="px-4 py-2 border-r border-border">預估結束</td>
-      <td className="px-4 py-2">實際結束</td>
-    </tr>
-  );
 
   let currentDay = '';
   
@@ -75,15 +47,42 @@ export const ScheduleTable = ({ groups, onActualEndChange }: ScheduleTableProps)
       <div className="overflow-x-auto">
         <table className="min-w-full">
           <tbody className="text-sm divide-y divide-border">
-            {groups.map((group, index) => {
-              const rows = [];
-              
-              // 添加天數標題
-              if (group.dayLabel && group.dayLabel !== currentDay) {
-                currentDay = group.dayLabel;
-                rows.push(renderDayHeader(currentDay));
-                rows.push(renderSubHeader());
-              }
+          {groups.map((group, index) => {
+            const rows = [];
+            
+            // 添加天數標題
+            if (group.dayLabel && group.dayLabel !== currentDay) {
+              currentDay = group.dayLabel;
+              rows.push(renderDayHeader(currentDay));
+              rows.push(
+                <tr key={`subheader-${currentDay}`} className="bg-secondary text-secondary-foreground text-sm font-medium">
+                  <td className="px-4 py-2 border-r border-border">
+                    <div className="flex items-center gap-2">
+                      <Target className="w-4 h-4" />
+                      項次
+                    </div>
+                  </td>
+                  <td className="px-4 py-2 border-r border-border">組次</td>
+                  <td className="px-4 py-2 border-r border-border">
+                    <div className="flex items-center gap-2">
+                      <Users className="w-4 h-4" />
+                      年齡組
+                    </div>
+                  </td>
+                  <td className="px-4 py-2 border-r border-border">性別</td>
+                  <td className="px-4 py-2 border-r border-border">比賽項目</td>
+                  <td className="px-4 py-2 border-r border-border">平均成績</td>
+                  <td className="px-4 py-2 border-r border-border">
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-4 h-4" />
+                      預估開始
+                    </div>
+                  </td>
+                  <td className="px-4 py-2 border-r border-border">預估結束</td>
+                  <td className="px-4 py-2">實際結束</td>
+                </tr>
+              );
+            }
 
               // 添加數據行
               const isCurrent = isCurrentEvent(group);
