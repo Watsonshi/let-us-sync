@@ -13,7 +13,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter basename={process.env.NODE_ENV === 'production' ? '/let-us-sync' : ''}>
+      <BrowserRouter basename={process.env.GITHUB_ACTIONS ? '/let-us-sync' : ''}>
         <Routes>
           <Route path="/" element={<Index />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
