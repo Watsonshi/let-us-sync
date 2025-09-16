@@ -13,6 +13,7 @@ export interface SwimGroup {
   actualEnd?: Date;
   scheduledStart?: Date;
   scheduledEnd?: Date;
+  playerNames?: string[]; // 新增：該組的選手姓名列表
 }
 
 export interface DayRule {
@@ -27,6 +28,15 @@ export interface FilterOptions {
   ageGroupSelect: string;
   genderSelect: string;
   eventTypeSelect: string;
+  playerSelect: string; // 新增：選手篩選
+}
+
+export interface PlayerData {
+  heat: string;
+  ageGroup: string;
+  gender: string;
+  eventType: string;
+  playerName: string;
 }
 
 export interface ScheduleConfig {

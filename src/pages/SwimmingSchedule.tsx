@@ -4,13 +4,15 @@ import { CurrentTime } from '@/components/CurrentTime';
 import { ControlPanel } from '@/components/ControlPanel';
 import { FileUpload } from '@/components/FileUpload';
 import { ScheduleTable } from '@/components/ScheduleTable';
-import { SwimGroup, ScheduleConfig, FilterOptions } from '@/types/swimming';
+import { SwimGroup, ScheduleConfig, FilterOptions, PlayerData } from '@/types/swimming';
 import { parseExcelFile, buildGroupsFromRows } from '@/utils/excelUtils';
 import { parseMmSs, parseTimeInputToDate, moveOutOfLunch, addSecondsSkippingLunch, advanceCursor } from '@/utils/timeUtils';
+import { parsePlayerCSV, getUniquePlayersFromCSV } from '@/utils/csvUtils';
 import { Waves, Timer } from 'lucide-react';
 
 const SwimmingSchedule = () => {
   const [groups, setGroups] = useState<SwimGroup[]>([]);
+  const [players, setPlayers] = useState<PlayerData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [config, setConfig] = useState<ScheduleConfig>({
     turnover: 10,
@@ -23,6 +25,7 @@ const SwimmingSchedule = () => {
     ageGroupSelect: 'all',
     genderSelect: 'all',
     eventTypeSelect: 'all',
+    playerSelect: 'all', // 新增：選手篩選
   });
 
   // 計算篩選選項
@@ -31,8 +34,9 @@ const SwimmingSchedule = () => {
       ageGroups: [...new Set(groups.map(g => g.ageGroup).filter(Boolean))].sort(),
       genders: [...new Set(groups.map(g => g.gender).filter(Boolean))].sort(),
       eventTypes: [...new Set(groups.map(g => g.eventType).filter(Boolean))].sort(),
+      players: getUniquePlayersFromCSV(players),
     };
-  }, [groups]);
+  }, [groups, players]);
 
   // 應用篩選和計算時間
   const processedGroups = useMemo(() => {
@@ -114,6 +118,19 @@ const SwimmingSchedule = () => {
     if (filters.ageGroupSelect && filters.ageGroupSelect !== 'all') filtered = filtered.filter(g => g.ageGroup === filters.ageGroupSelect);
     if (filters.genderSelect && filters.genderSelect !== 'all') filtered = filtered.filter(g => g.gender === filters.genderSelect);
     if (filters.eventTypeSelect && filters.eventTypeSelect !== 'all') filtered = filtered.filter(g => g.eventType === filters.eventTypeSelect);
+    
+    // 新增選手篩選
+    if (filters.playerSelect && filters.playerSelect !== 'all') {
+      filtered = filtered.filter(g => {
+        // 找到該組對應的選手資料
+        const matchingPlayers = players.filter(p => 
+          p.ageGroup === g.ageGroup && 
+          p.gender === g.gender && 
+          p.eventType === g.eventType
+        );
+        return matchingPlayers.some(p => p.playerName === filters.playerSelect);
+      });
+    }
 
     return filtered;
   }, [groups, config, filters]);
@@ -132,6 +149,35 @@ const SwimmingSchedule = () => {
       console.error('讀檔失敗:', error);
       toast({
         title: "讀檔失敗",
+        description: error instanceof Error ? error.message : "未知錯誤",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleLoadPlayerList = async () => {
+    try {
+      setIsLoading(true);
+      
+      const response = await fetch('/player-list.csv');
+      if (!response.ok) {
+        throw new Error(`無法載入選手名單: ${response.statusText}`);
+      }
+      
+      const csvContent = await response.text();
+      const playerData = parsePlayerCSV(csvContent);
+      setPlayers(playerData);
+      
+      toast({
+        title: "選手名單載入成功",
+        description: `成功載入 ${getUniquePlayersFromCSV(playerData).length} 位選手資料`,
+      });
+    } catch (error) {
+      console.error('載入選手名單失敗:', error);
+      toast({
+        title: "載入失敗",
         description: error instanceof Error ? error.message : "未知錯誤",
         variant: "destructive",
       });
@@ -258,6 +304,7 @@ const SwimmingSchedule = () => {
           ageGroups={filterOptions.ageGroups}
           genders={filterOptions.genders}
           eventTypes={filterOptions.eventTypes}
+          players={filterOptions.players}
           onConfigChange={setConfig}
           onFilterChange={setFilters}
         />
@@ -266,6 +313,7 @@ const SwimmingSchedule = () => {
         <FileUpload
           onFileSelect={handleFileSelect}
           onLoadDefault={handleLoadDefault}
+          onLoadPlayerList={handleLoadPlayerList}
           isLoading={isLoading}
         />
 

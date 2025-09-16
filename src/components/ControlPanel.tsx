@@ -12,6 +12,7 @@ interface ControlPanelProps {
   ageGroups: string[];
   genders: string[];
   eventTypes: string[];
+  players: string[]; // 新增：選手名單
   onConfigChange: (config: ScheduleConfig) => void;
   onFilterChange: (filters: FilterOptions) => void;
 }
@@ -22,6 +23,7 @@ export const ControlPanel = ({
   ageGroups,
   genders,
   eventTypes,
+  players, // 新增：選手名單
   onConfigChange,
   onFilterChange,
 }: ControlPanelProps) => {
@@ -31,6 +33,7 @@ export const ControlPanel = ({
       ageGroupSelect: 'all',
       genderSelect: 'all',
       eventTypeSelect: 'all',
+      playerSelect: 'all', // 新增：選手篩選重置
     });
   };
 
@@ -50,7 +53,7 @@ export const ControlPanel = ({
               重置篩選
             </Button>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-9 gap-4">
           {/* 配置設定 */}
           <div className="space-y-2">
             <Label htmlFor="turnover" className="text-sm font-medium">轉換秒數</Label>
@@ -167,6 +170,24 @@ export const ControlPanel = ({
                 <SelectItem value="all">全部項目</SelectItem>
                 {eventTypes.map((eventType) => (
                   <SelectItem key={eventType} value={eventType}>{eventType}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">選手篩選</Label>
+            <Select 
+              value={filters.playerSelect} 
+              onValueChange={(value) => onFilterChange({ ...filters, playerSelect: value })}
+            >
+              <SelectTrigger className="h-9">
+                <SelectValue placeholder="全部選手" />
+              </SelectTrigger>
+              <SelectContent className="bg-background border border-border shadow-lg z-50 max-h-60 overflow-y-auto">
+                <SelectItem value="all">全部選手</SelectItem>
+                {players.map((player) => (
+                  <SelectItem key={player} value={player}>{player}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
