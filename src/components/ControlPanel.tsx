@@ -55,7 +55,7 @@ export const ControlPanel = ({
             </Button>
           </div>
           {/* 時間配置設定 */}
-          <div className="grid grid-cols-2 gap-6 mb-6">
+          <div className="grid grid-cols-2 gap-4 mb-6">
             <div className="space-y-2">
               <Label htmlFor="lunchStart" className="text-sm font-medium">午休開始</Label>
               <Input
