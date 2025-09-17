@@ -54,32 +54,34 @@ export const ControlPanel = ({
               重置篩選
             </Button>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-8 gap-4">
-          {/* 配置設定 - 隱藏轉換秒數和無成績預設，但保留邏輯 */}
-          
-          <div className="space-y-2">
-            <Label htmlFor="lunchStart" className="text-sm font-medium">午休開始</Label>
-            <Input
-              id="lunchStart"
-              type="time"
-              value={config.lunchStart}
-              onChange={(e) => onConfigChange({ ...config, lunchStart: e.target.value })}
-              className="h-9"
-            />
-          </div>
+          {/* 時間配置設定 */}
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <div className="space-y-2">
+              <Label htmlFor="lunchStart" className="text-sm font-medium">午休開始</Label>
+              <Input
+                id="lunchStart"
+                type="time"
+                value={config.lunchStart}
+                onChange={(e) => onConfigChange({ ...config, lunchStart: e.target.value })}
+                className="h-9"
+              />
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="lunchEnd" className="text-sm font-medium">午休結束</Label>
-            <Input
-              id="lunchEnd"
-              type="time"
-              value={config.lunchEnd}
-              onChange={(e) => onConfigChange({ ...config, lunchEnd: e.target.value })}
-              className="h-9"
-            />
+            <div className="space-y-2">
+              <Label htmlFor="lunchEnd" className="text-sm font-medium">午休結束</Label>
+              <Input
+                id="lunchEnd"
+                type="time"
+                value={config.lunchEnd}
+                onChange={(e) => onConfigChange({ ...config, lunchEnd: e.target.value })}
+                className="h-9"
+              />
+            </div>
           </div>
 
           {/* 篩選器 */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+
           <div className="space-y-2">
             <Label className="text-sm font-medium">天數篩選</Label>
             <Select 
@@ -162,9 +164,9 @@ export const ControlPanel = ({
                 <SelectValue placeholder="全部選手" />
               </SelectTrigger>
               <SelectContent className="bg-background border border-border shadow-lg z-50 max-h-60 overflow-y-auto">
-                <SelectItem value="all">全部選手</SelectItem>
+                <SelectItem value="all" className="text-base">全部選手</SelectItem>
                 {players.map((player) => (
-                  <SelectItem key={player} value={player}>{player}</SelectItem>
+                  <SelectItem key={player} value={player} className="text-base">{player}</SelectItem>
                 ))}
               </SelectContent>
             </Select>

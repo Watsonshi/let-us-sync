@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { SwimGroup } from '@/types/swimming';
 import { fmtHM, mmss } from '@/utils/timeUtils';
-import { Clock, Trophy, Users, Target, Hash, Timer } from 'lucide-react';
+import { Clock, Trophy, Users, Target, Hash, Timer, ChevronUp } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ScheduleTableProps {
@@ -13,6 +14,7 @@ interface ScheduleTableProps {
 
 export const ScheduleTable = ({ groups, onActualEndChange }: ScheduleTableProps) => {
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [showBackToTop, setShowBackToTop] = useState(false);
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -22,6 +24,19 @@ export const ScheduleTable = ({ groups, onActualEndChange }: ScheduleTableProps)
 
     return () => clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowBackToTop(window.scrollY > 300);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const isCurrentEvent = (group: SwimGroup): boolean => {
     if (!group.scheduledStart || !group.scheduledEnd) return false;
@@ -279,5 +294,20 @@ export const ScheduleTable = ({ groups, onActualEndChange }: ScheduleTableProps)
     );
   };
 
-  return isMobile ? renderMobileView() : renderDesktopView();
+  return (
+    <div className="relative">
+      {isMobile ? renderMobileView() : renderDesktopView()}
+      
+      {/* 回到頂端按鈕 - 僅在手機版顯示 */}
+      {isMobile && showBackToTop && (
+        <Button
+          onClick={scrollToTop}
+          className="fixed bottom-6 right-6 z-50 rounded-full w-12 h-12 shadow-lg"
+          size="icon"
+        >
+          <ChevronUp className="w-5 h-5" />
+        </Button>
+      )}
+    </div>
+  );
 };
