@@ -130,4 +130,16 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* 隱藏時間輸入框的內建圖示 */
+  input[type="time"]::-webkit-calendar-picker-indicator {
+    display: none;
+    -webkit-appearance: none;
+  }
+  
+  input[type="time"]::-webkit-inner-spin-button,
+  input[type="time"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
 }
