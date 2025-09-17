@@ -142,4 +142,9 @@
     -webkit-appearance: none;
     margin: 0;
   }
+
+  /* 強制時間輸入框文字左對齊 */
+  input[type="time"] {
+    text-align: left !important;
+  }
 }
