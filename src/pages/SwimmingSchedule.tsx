@@ -9,6 +9,7 @@ import { parseExcelFile, buildGroupsFromRows } from '@/utils/excelUtils';
 import { parseMmSs, parseTimeInputToDate, moveOutOfLunch, addSecondsSkippingLunch, advanceCursor } from '@/utils/timeUtils';
 import { parsePlayerCSV, getUniquePlayersFromCSV } from '@/utils/csvUtils';
 import { Waves, Timer } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const SwimmingSchedule = () => {
   const [groups, setGroups] = useState<SwimGroup[]>([]);
@@ -21,7 +22,7 @@ const SwimmingSchedule = () => {
     fallback: '06:00',
   });
   const [filters, setFilters] = useState<FilterOptions>({
-    daySelect: 'all',
+    daySelect: '', // 改為空字串，表示未選擇任何天數
     ageGroupSelect: 'all',
     genderSelect: 'all',
     eventTypeSelect: 'all',
@@ -31,7 +32,9 @@ const SwimmingSchedule = () => {
 
   // 計算篩選選項
   const filterOptions = useMemo(() => {
+    const days = [...new Set(groups.map(g => ({ key: g.dayKey, label: g.dayLabel })).filter(d => d.key && d.label))];
     return {
+      days: days.sort((a, b) => a.key.localeCompare(b.key)),
       ageGroups: [...new Set(groups.map(g => g.ageGroup).filter(Boolean))].sort(),
       genders: [...new Set(groups.map(g => g.gender).filter(Boolean))].sort(),
       eventTypes: [...new Set(groups.map(g => g.eventType).filter(Boolean))].sort(),
@@ -41,7 +44,8 @@ const SwimmingSchedule = () => {
 
   // 應用篩選和計算時間
   const processedGroups = useMemo(() => {
-    if (!groups.length) return [];
+    // 如果沒有載入資料或沒有選擇天數，返回空陣列
+    if (!groups.length || !filters.daySelect) return [];
 
     const base = new Date();
     const Ls = parseTimeInputToDate(base, config.lunchStart);
@@ -115,7 +119,7 @@ const SwimmingSchedule = () => {
 
     // 然後應用篩選
     let filtered = allWithTimes;
-    if (filters.daySelect && filters.daySelect !== 'all') filtered = filtered.filter(g => g.dayKey === filters.daySelect);
+    if (filters.daySelect) filtered = filtered.filter(g => g.dayKey === filters.daySelect);
     if (filters.ageGroupSelect && filters.ageGroupSelect !== 'all') filtered = filtered.filter(g => g.ageGroup === filters.ageGroupSelect);
     if (filters.genderSelect && filters.genderSelect !== 'all') filtered = filtered.filter(g => g.gender === filters.genderSelect);
     if (filters.eventTypeSelect && filters.eventTypeSelect !== 'all') filtered = filtered.filter(g => g.eventType === filters.eventTypeSelect);
@@ -369,12 +373,48 @@ const SwimmingSchedule = () => {
           isLoading={isLoading}
         />
 
+        {/* Day Navigation */}
+        {filterOptions.days.length > 0 && (
+          <div className="bg-background rounded-xl border border-border/50 p-6 shadow-sm">
+            <div className="text-center mb-6">
+              <h2 className="text-lg font-semibold text-foreground mb-2">選擇比賽天數</h2>
+              <p className="text-sm text-muted-foreground">選擇要檢視的比賽日程</p>
+            </div>
+            
+            <div className="flex flex-wrap justify-center gap-3">
+              {filterOptions.days.map((day) => (
+                <Button
+                  key={day.key}
+                  variant={filters.daySelect === day.key ? "default" : "outline"}
+                  size="lg"
+                  onClick={() => setFilters(prev => ({ ...prev, daySelect: day.key }))}
+                  className="min-w-24 transition-all duration-200 hover:scale-105"
+                >
+                  {day.label}
+                </Button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Schedule Table */}
-        {processedGroups.length > 0 ? (
+        {filters.daySelect && processedGroups.length > 0 ? (
           <ScheduleTable
             groups={processedGroups}
             onActualEndChange={handleActualEndChange}
           />
+        ) : groups.length > 0 && !filters.daySelect ? (
+          <div className="text-center py-12">
+            <div className="p-6 bg-muted/50 rounded-2xl inline-block">
+              <div className="w-12 h-12 text-muted-foreground mx-auto mb-3 bg-secondary rounded-lg flex items-center justify-center">
+                📅
+              </div>
+              <h3 className="text-lg font-medium text-muted-foreground">請選擇比賽天數</h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                請在上方選擇要檢視的比賽日程
+              </p>
+            </div>
+          </div>
         ) : (
           <div className="text-center py-12">
             <div className="p-6 bg-muted/50 rounded-2xl inline-block">
