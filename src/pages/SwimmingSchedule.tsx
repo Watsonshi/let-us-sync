@@ -32,9 +32,23 @@ const SwimmingSchedule = () => {
 
   // 計算篩選選項
   const filterOptions = useMemo(() => {
-    const days = [...new Set(groups.map(g => ({ key: g.dayKey, label: g.dayLabel })).filter(d => d.key && d.label))];
+    // 用 Map 去重，避免重複的 dayKey
+    const dayMap = new Map();
+    groups.forEach(g => {
+      if (g.dayKey && g.dayLabel && !dayMap.has(g.dayKey)) {
+        dayMap.set(g.dayKey, g.dayLabel);
+      }
+    });
+    
+    // 轉換為陣列並產生簡潔的 Day 標籤
+    const days = Array.from(dayMap.entries()).map(([key, originalLabel], index) => ({
+      key,
+      label: `Day ${index + 1}`,
+      originalLabel
+    })).sort((a, b) => a.key.localeCompare(b.key));
+    
     return {
-      days: days.sort((a, b) => a.key.localeCompare(b.key)),
+      days,
       ageGroups: [...new Set(groups.map(g => g.ageGroup).filter(Boolean))].sort(),
       genders: [...new Set(groups.map(g => g.gender).filter(Boolean))].sort(),
       eventTypes: [...new Set(groups.map(g => g.eventType).filter(Boolean))].sort(),
