@@ -122,7 +122,7 @@ export const buildGroupsFromRows = (rows: Record<string, any>[], fallback: numbe
   
   const arr = Array.from(map.values()).map(g => ({
     ...g,
-    avgSeconds: g.times.length ? g.times.reduce((a: number, b: number) => a + b, 0) / g.times.length : null,
+    avgSeconds: g.times.length ? Math.max(...g.times) : null, // 改為使用最慢成績作為預估完賽時間
   }));
   
   // 處理無成績組別
@@ -133,8 +133,9 @@ export const buildGroupsFromRows = (rows: Record<string, any>[], fallback: numbe
       );
       
       if (sameEventGroups.length > 0) {
-        const totalAvg = sameEventGroups.reduce((sum, group) => sum + group.avgSeconds, 0) / sameEventGroups.length;
-        g.avgSeconds = totalAvg;
+        // 使用同項次其他組別的最慢成績作為預估
+        const maxTime = Math.max(...sameEventGroups.map(group => group.avgSeconds));
+        g.avgSeconds = maxTime;
       } else {
         g.avgSeconds = fallback;
       }

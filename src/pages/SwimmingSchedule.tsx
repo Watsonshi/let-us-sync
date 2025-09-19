@@ -55,8 +55,8 @@ const SwimmingSchedule = () => {
           other.eventNo === g.eventNo && other.times && other.times.length > 0
         );
         if (sameEventGroups.length > 0) {
-          const totalAvg = sameEventGroups.reduce((sum, group) => sum + group.avgSeconds, 0) / sameEventGroups.length;
-          return { ...g, avgSeconds: totalAvg };
+          const maxTime = Math.max(...sameEventGroups.map(group => group.avgSeconds));
+          return { ...g, avgSeconds: maxTime };
         } else {
           return { ...g, avgSeconds: fallbackSeconds };
         }

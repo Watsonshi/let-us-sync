@@ -6,7 +6,7 @@ export interface SwimGroup {
   gender: string;
   eventType: string;
   times: number[];
-  avgSeconds: number;
+  avgSeconds: number; // 預估完賽時間（該組最慢成績）
   dayKey: string;
   dayLabel: string;
   actualStart?: Date;
