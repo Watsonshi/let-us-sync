@@ -169,7 +169,7 @@ export const ScheduleTable = ({ groups, onActualEndChange }: ScheduleTableProps)
 
                 {/* Average time */}
                 <div className="flex items-center justify-center gap-2 text-sm border-t pt-3">
-                  <span className="text-muted-foreground">平均成績:</span>
+                  <span className="text-muted-foreground">預估完賽時間:</span>
                   <span className="font-mono text-info font-medium">{mmss(group.avgSeconds)}</span>
                 </div>
               </CardContent>
@@ -222,7 +222,7 @@ export const ScheduleTable = ({ groups, onActualEndChange }: ScheduleTableProps)
                     </td>
                     <td className="px-4 py-2 border-r border-border">性別</td>
                     <td className="px-4 py-2 border-r border-border">比賽項目</td>
-                    <td className="px-4 py-2 border-r border-border">平均成績</td>
+                    <td className="px-4 py-2 border-r border-border">預估完賽時間</td>
                     <td className="px-4 py-2 border-r border-border">
                       <div className="flex items-center gap-2">
                         <Clock className="w-4 h-4" />
