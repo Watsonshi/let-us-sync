@@ -15,7 +15,7 @@ const SwimmingSchedule = () => {
   const [players, setPlayers] = useState<PlayerData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [config, setConfig] = useState<ScheduleConfig>({
-    turnover: 25,
+    turnover: 20,
     lunchStart: '12:00',
     lunchEnd: '13:30',
     fallback: '06:00',
