@@ -6,8 +6,7 @@ const REQUIRED_HEADERS = ['項次', '組次', '年齡組', '性別', '比賽項�
 
 const DAY_RULES = [
   { key: 'd1', label: '第一天（114/09/19，五）', start: 1, end: 85 },
-  { key: 'd2', label: '第二天（114/09/20，六）', start: 86, end: 111 },
-  { key: 'd3', label: '第三天（114/09/21，日）', start: 112, end: 136 },
+  { key: 'd2', label: '第二天（114/09/20，六）', start: 86, end: 136 },
 ];
 
 export const dayKeyOfEvent = (ev: number): string => {
