@@ -261,13 +261,13 @@ const SwimmingSchedule = () => {
       setIsLoading(true);
       
       // 載入Excel格式的預設資料
-      const excelResponse = await fetch('/解析結果-2.xlsx');
+      const excelResponse = await fetch('/schedule-data.xlsx');
       if (!excelResponse.ok) {
         throw new Error(`HTTP ${excelResponse.status}: ${excelResponse.statusText}`);
       }
       
       const blob = await excelResponse.blob();
-      const file = new File([blob], '解析結果-2.xlsx', { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const file = new File([blob], 'schedule-data.xlsx', { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
       
       const fallback = parseMmSs(config.fallback) ?? 360;
       const newGroups = await parseExcelFile(file, fallback);
