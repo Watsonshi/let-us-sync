@@ -260,19 +260,17 @@ const SwimmingSchedule = () => {
     try {
       setIsLoading(true);
       
-      // 載入JSON格式的預設資料
-      const jsonResponse = await fetch('/sample-data.json');
-      if (!jsonResponse.ok) {
-        throw new Error(`HTTP ${jsonResponse.status}: ${jsonResponse.statusText}`);
+      // 載入Excel格式的預設資料
+      const excelResponse = await fetch('/解析結果-2.xlsx');
+      if (!excelResponse.ok) {
+        throw new Error(`HTTP ${excelResponse.status}: ${excelResponse.statusText}`);
       }
       
-      const jsonData = await jsonResponse.json();
-      console.log('JSON資料筆數:', jsonData.length);
-      console.log('JSON前5筆:', jsonData.slice(0, 5));
-      console.log('JSON項次範圍:', Math.min(...jsonData.map((d: any) => parseInt(d.項次))), '-', Math.max(...jsonData.map((d: any) => parseInt(d.項次))));
+      const blob = await excelResponse.blob();
+      const file = new File([blob], '解析結果-2.xlsx', { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
       
       const fallback = parseMmSs(config.fallback) ?? 360;
-      const newGroups = buildGroupsFromRows(jsonData, fallback);
+      const newGroups = await parseExcelFile(file, fallback);
       console.log('解析後組別數:', newGroups.length);
       console.log('解析後前5組:', newGroups.slice(0, 5));
       setGroups(newGroups);
