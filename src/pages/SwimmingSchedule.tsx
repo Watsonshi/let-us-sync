@@ -341,12 +341,13 @@ const SwimmingSchedule = () => {
 
   const loadScheduleFromDatabase = async (): Promise<SwimGroup[]> => {
     try {
-      // 使用 .range() 或不設限制以載入所有資料
+      // Supabase 預設只返回 1000 筆，需要明確指定範圍載入所有資料
       const { data, error, count } = await supabase
         .from('swimming_schedule')
         .select('*', { count: 'exact' })
         .order('item_number', { ascending: true })
-        .order('group_number', { ascending: true });
+        .order('group_number', { ascending: true })
+        .range(0, 9999); // 載入前 10000 筆（遠超過實際資料量）
       
       if (error) throw error;
       
