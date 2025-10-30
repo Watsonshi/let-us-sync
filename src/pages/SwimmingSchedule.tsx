@@ -81,12 +81,27 @@ const SwimmingSchedule = () => {
       originalLabel
     })).sort((a, b) => a.key.localeCompare(b.key));
     
+    // 從 Excel 解析的 groups 中提取所有選手名單
+    const allPlayersFromExcel = new Set<string>();
+    groups.forEach(g => {
+      if (g.playerNames && g.playerNames.length > 0) {
+        g.playerNames.forEach(name => allPlayersFromExcel.add(name));
+      }
+    });
+    
+    // 合併 Excel 和 CSV 的選手名單（優先使用 Excel 的）
+    const csvPlayers = getUniquePlayersFromCSV(players);
+    const combinedPlayers = [
+      ...Array.from(allPlayersFromExcel),
+      ...csvPlayers.filter(name => !allPlayersFromExcel.has(name))
+    ].sort((a, b) => a.localeCompare(b, 'zh-TW'));
+    
     return {
       days,
       ageGroups: [...new Set(groups.map(g => g.ageGroup).filter(Boolean))].sort(),
       genders: [...new Set(groups.map(g => g.gender).filter(Boolean))].sort(),
       eventTypes: [...new Set(groups.map(g => g.eventType).filter(Boolean))].sort(),
-      players: getUniquePlayersFromCSV(players),
+      players: combinedPlayers,
     };
   }, [groups, players]);
 
@@ -181,32 +196,40 @@ const SwimmingSchedule = () => {
     if (filters.genderSelect && filters.genderSelect !== 'all') filtered = filtered.filter(g => g.gender === filters.genderSelect);
     if (filters.eventTypeSelect && filters.eventTypeSelect !== 'all') filtered = filtered.filter(g => g.eventType === filters.eventTypeSelect);
     
-    // 選手名單篩選（從載入的CSV檔案）
+    // 選手名單篩選（從 Excel 解析的選手名單）
     if (filters.playerSelect && filters.playerSelect !== 'all') {
-      // 正規化項目名稱的函數（移除空格差異）
-      const normalizeEventName = (eventName: string) => {
-        return eventName.replace(/\s+/g, ''); // 移除所有空格
-      };
-      
       filtered = filtered.filter(g => {
-        // 使用正規化的項目名稱進行比較，並且要匹配組次
-        const matchingPlayers = players.filter(p => {
-          const ageGroupMatch = p.ageGroup === g.ageGroup;
-          const genderMatch = p.gender === g.gender;
-          const eventTypeMatch = normalizeEventName(p.eventType) === normalizeEventName(g.eventType);
-          const playerNameMatch = p.playerName === filters.playerSelect;
-          
-          // 解析組次資訊 (例如 "1/5" -> heatNum: 1, heatTotal: 5)
-          const heatParts = p.heat.split('/');
-          const playerHeatNum = parseInt(heatParts[0]);
-          const playerHeatTotal = parseInt(heatParts[1]);
-          
-          const heatMatch = g.heatNum === playerHeatNum && g.heatTotal === playerHeatTotal;
-          
-          return ageGroupMatch && genderMatch && eventTypeMatch && playerNameMatch && heatMatch;
-        });
+        // 檢查該組的選手名單中是否包含所選選手
+        if (g.playerNames && g.playerNames.length > 0) {
+          return g.playerNames.includes(filters.playerSelect);
+        }
         
-        return matchingPlayers.length > 0;
+        // 如果沒有選手名單，再從 CSV 資料中查找（向後兼容）
+        if (players.length > 0) {
+          const normalizeEventName = (eventName: string) => {
+            return eventName.replace(/\s+/g, ''); // 移除所有空格
+          };
+          
+          const matchingPlayers = players.filter(p => {
+            const ageGroupMatch = p.ageGroup === g.ageGroup;
+            const genderMatch = p.gender === g.gender;
+            const eventTypeMatch = normalizeEventName(p.eventType) === normalizeEventName(g.eventType);
+            const playerNameMatch = p.playerName === filters.playerSelect;
+            
+            // 解析組次資訊 (例如 "1/5" -> heatNum: 1, heatTotal: 5)
+            const heatParts = p.heat.split('/');
+            const playerHeatNum = parseInt(heatParts[0]);
+            const playerHeatTotal = parseInt(heatParts[1]);
+            
+            const heatMatch = g.heatNum === playerHeatNum && g.heatTotal === playerHeatTotal;
+            
+            return ageGroupMatch && genderMatch && eventTypeMatch && playerNameMatch && heatMatch;
+          });
+          
+          return matchingPlayers.length > 0;
+        }
+        
+        return false;
       });
     }
 
