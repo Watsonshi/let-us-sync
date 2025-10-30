@@ -14,7 +14,7 @@ export interface SwimGroup {
   scheduledStart?: Date;
   scheduledEnd?: Date;
   playerNames?: string[]; // 該組的選手姓名列表
-  playerData?: Array<{ name: string; time: number | null; timeStr: string }>; // 選手姓名和成績的對應
+  playerData?: Array<{ name: string; unit: string; time: number | null; timeStr: string }>; // 選手姓名、單位和成績的對應
 }
 
 export interface DayRule {
@@ -29,6 +29,7 @@ export interface FilterOptions {
   ageGroupSelect: string;
   genderSelect: string;
   eventTypeSelect: string;
+  unitSelect: string; // 新增：參賽單位篩選
   playerSelect: string; // 選手名單篩選
   playerSearch: string; // 選手名稱搜尋
 }

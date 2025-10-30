@@ -31,6 +31,7 @@ const SwimmingSchedule = () => {
     ageGroupSelect: 'all',
     genderSelect: 'all',
     eventTypeSelect: 'all',
+    unitSelect: 'all', // 新增：參賽單位篩選
     playerSelect: 'all',
     playerSearch: '', // 選手名稱搜尋
   });
@@ -81,11 +82,18 @@ const SwimmingSchedule = () => {
       originalLabel
     })).sort((a, b) => a.key.localeCompare(b.key));
     
-    // 從 Excel 解析的 groups 中提取所有選手名單
+    // 從 Excel 解析的 groups 中提取所有選手名單和單位
     const allPlayersFromExcel = new Set<string>();
+    const allUnitsFromExcel = new Set<string>();
+    
     groups.forEach(g => {
       if (g.playerNames && g.playerNames.length > 0) {
         g.playerNames.forEach(name => allPlayersFromExcel.add(name));
+      }
+      if (g.playerData && g.playerData.length > 0) {
+        g.playerData.forEach(p => {
+          if (p.unit) allUnitsFromExcel.add(p.unit);
+        });
       }
     });
     
@@ -101,6 +109,7 @@ const SwimmingSchedule = () => {
       ageGroups: [...new Set(groups.map(g => g.ageGroup).filter(Boolean))].sort(),
       genders: [...new Set(groups.map(g => g.gender).filter(Boolean))].sort(),
       eventTypes: [...new Set(groups.map(g => g.eventType).filter(Boolean))].sort(),
+      units: Array.from(allUnitsFromExcel).sort((a, b) => a.localeCompare(b, 'zh-TW')), // 新增：單位列表
       players: combinedPlayers,
     };
   }, [groups, players]);
@@ -195,6 +204,17 @@ const SwimmingSchedule = () => {
     if (filters.ageGroupSelect && filters.ageGroupSelect !== 'all') filtered = filtered.filter(g => g.ageGroup === filters.ageGroupSelect);
     if (filters.genderSelect && filters.genderSelect !== 'all') filtered = filtered.filter(g => g.gender === filters.genderSelect);
     if (filters.eventTypeSelect && filters.eventTypeSelect !== 'all') filtered = filtered.filter(g => g.eventType === filters.eventTypeSelect);
+    
+    // 參賽單位篩選
+    if (filters.unitSelect && filters.unitSelect !== 'all') {
+      filtered = filtered.filter(g => {
+        // 檢查該組的選手資料中是否有該單位的選手
+        if (g.playerData && g.playerData.length > 0) {
+          return g.playerData.some(p => p.unit === filters.unitSelect);
+        }
+        return false;
+      });
+    }
     
     // 選手名單篩選（從 Excel 解析的選手名單）
     if (filters.playerSelect && filters.playerSelect !== 'all') {
@@ -652,6 +672,7 @@ const SwimmingSchedule = () => {
           ageGroups={filterOptions.ageGroups}
           genders={filterOptions.genders}
           eventTypes={filterOptions.eventTypes}
+          units={filterOptions.units}
           players={filterOptions.players}
           onConfigChange={setConfig}
           onFilterChange={setFilters}

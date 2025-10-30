@@ -12,6 +12,7 @@ interface ControlPanelProps {
   ageGroups: string[];
   genders: string[];
   eventTypes: string[];
+  units: string[]; // 新增：參賽單位列表
   players: string[]; // 新增：選手名單
   onConfigChange: (config: ScheduleConfig) => void;
   onFilterChange: (filters: FilterOptions) => void;
@@ -23,6 +24,7 @@ export const ControlPanel = ({
   ageGroups,
   genders,
   eventTypes,
+  units, // 新增：參賽單位列表
   players, // 新增：選手名單
   onConfigChange,
   onFilterChange,
@@ -33,6 +35,7 @@ export const ControlPanel = ({
       ageGroupSelect: 'all',
       genderSelect: 'all',
       eventTypeSelect: 'all',
+      unitSelect: 'all', // 新增：參賽單位重置
       playerSelect: 'all',
       playerSearch: '', // 重置搜尋框
     });
@@ -149,6 +152,24 @@ export const ControlPanel = ({
                 <SelectItem value="all">全部項目</SelectItem>
                 {eventTypes.map((eventType) => (
                   <SelectItem key={eventType} value={eventType}>{eventType}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">參賽單位篩選</Label>
+            <Select 
+              value={filters.unitSelect} 
+              onValueChange={(value) => onFilterChange({ ...filters, unitSelect: value })}
+            >
+              <SelectTrigger className="h-9">
+                <SelectValue placeholder="全部單位" />
+              </SelectTrigger>
+              <SelectContent className="bg-background border border-border shadow-lg z-50 max-h-60 overflow-y-auto">
+                <SelectItem value="all">全部單位</SelectItem>
+                {units.map((unit) => (
+                  <SelectItem key={unit} value={unit}>{unit}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
