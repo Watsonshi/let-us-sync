@@ -338,13 +338,16 @@ const SwimmingSchedule = () => {
 
   const loadScheduleFromDatabase = async (): Promise<SwimGroup[]> => {
     try {
-      const { data, error } = await supabase
+      // 使用 .range() 或不設限制以載入所有資料
+      const { data, error, count } = await supabase
         .from('swimming_schedule')
-        .select('*')
+        .select('*', { count: 'exact' })
         .order('item_number', { ascending: true })
         .order('group_number', { ascending: true });
       
       if (error) throw error;
+      
+      console.log(`從資料庫載入 ${data?.length} 筆記錄，總計 ${count} 筆`);
       
       if (!data || data.length === 0) {
         throw new Error('資料庫中沒有賽程資料');
@@ -358,8 +361,9 @@ const SwimmingSchedule = () => {
         
         if (!groupMap.has(key)) {
           // 從資料庫第一筆記錄推算 heatTotal
-          const sameEvent = data.filter(r => r.item_number === row.item_number);
-          const maxHeatNum = Math.max(...sameEvent.map(r => r.group_number));
+          const sameEvent = data.filter(r => r.item_number === row.item_number && r.group_number === row.group_number);
+          const allGroupsInEvent = data.filter(r => r.item_number === row.item_number);
+          const maxHeatNum = Math.max(...allGroupsInEvent.map(r => r.group_number));
           
           groupMap.set(key, {
             eventNo: row.item_number,
@@ -393,6 +397,9 @@ const SwimmingSchedule = () => {
         ...g,
         avgSeconds: g.times.length ? Math.max(...g.times) : 360,
       }));
+      
+      console.log(`groupMap 大小: ${groupMap.size}, 轉換後 groups 數量: ${groups.length}`);
+      console.log(`項次範圍: ${Math.min(...groups.map(g => g.eventNo))}-${Math.max(...groups.map(g => g.eventNo))}`);
 
       // 處理無成績組別
       groups.forEach(g => {
