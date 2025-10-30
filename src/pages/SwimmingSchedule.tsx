@@ -5,11 +5,12 @@ import { ControlPanel } from '@/components/ControlPanel';
 import { FileUpload } from '@/components/FileUpload';
 import { ScheduleTable } from '@/components/ScheduleTable';
 import { SwimGroup, ScheduleConfig, FilterOptions, PlayerData } from '@/types/swimming';
-import { parseExcelFile, buildGroupsFromRows } from '@/utils/excelUtils';
+import { parseExcelFile, buildGroupsFromRows, dayKeyOfEvent, dayLabelOfKey } from '@/utils/excelUtils';
 import { parseMmSs, parseTimeInputToDate, moveOutOfLunch, addSecondsSkippingLunch, advanceCursor } from '@/utils/timeUtils';
 import { parsePlayerCSV, getUniquePlayersFromCSV } from '@/utils/csvUtils';
 import { Waves, Timer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { supabase } from '@/integrations/supabase/client';
 
 const SwimmingSchedule = () => {
   const [groups, setGroups] = useState<SwimGroup[]>([]);
@@ -211,9 +212,13 @@ const SwimmingSchedule = () => {
       const fallback = parseMmSs(config.fallback) ?? 360;
       const newGroups = await parseExcelFile(file, fallback);
       setGroups(newGroups);
+      
+      // 將資料寫入資料庫
+      await saveScheduleToDatabase(newGroups);
+      
       toast({
         title: "檔案載入成功",
-        description: `成功載入 ${newGroups.length} 組比賽資料`,
+        description: `成功載入 ${newGroups.length} 組比賽資料並更新資料庫`,
       });
     } catch (error) {
       console.error('讀檔失敗:', error);
@@ -224,6 +229,138 @@ const SwimmingSchedule = () => {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const saveScheduleToDatabase = async (groups: SwimGroup[]) => {
+    try {
+      // 先刪除所有現有資料
+      const { error: deleteError } = await supabase
+        .from('swimming_schedule')
+        .delete()
+        .neq('id', '00000000-0000-0000-0000-000000000000'); // 刪除所有記錄
+      
+      if (deleteError) throw deleteError;
+
+      // 準備要插入的資料
+      const scheduleData = groups.flatMap(group => {
+        // 如果該組有選手姓名列表，為每位選手建立一筆記錄
+        if (group.playerNames && group.playerNames.length > 0) {
+          return group.playerNames.map(playerName => ({
+            item_number: group.eventNo,
+            group_number: group.heatNum,
+            age_group: group.ageGroup,
+            gender: group.gender,
+            event_name: group.eventType,
+            participant_name: playerName,
+            unit: '', // Excel 中沒有單位資訊，設為空
+            registration_time: null, // 可以從 times 陣列取得，但目前設為 null
+          }));
+        } else {
+          // 如果沒有選手姓名，建立一筆空記錄
+          return [{
+            item_number: group.eventNo,
+            group_number: group.heatNum,
+            age_group: group.ageGroup,
+            gender: group.gender,
+            event_name: group.eventType,
+            participant_name: '',
+            unit: '',
+            registration_time: null,
+          }];
+        }
+      });
+
+      // 批次插入資料
+      const { error: insertError } = await supabase
+        .from('swimming_schedule')
+        .insert(scheduleData);
+      
+      if (insertError) throw insertError;
+      
+      console.log(`成功寫入 ${scheduleData.length} 筆賽程資料到資料庫`);
+    } catch (error) {
+      console.error('寫入資料庫失敗:', error);
+      throw new Error('更新資料庫失敗：' + (error instanceof Error ? error.message : '未知錯誤'));
+    }
+  };
+
+  const loadScheduleFromDatabase = async (): Promise<SwimGroup[]> => {
+    try {
+      const { data, error } = await supabase
+        .from('swimming_schedule')
+        .select('*')
+        .order('item_number', { ascending: true })
+        .order('group_number', { ascending: true });
+      
+      if (error) throw error;
+      
+      if (!data || data.length === 0) {
+        throw new Error('資料庫中沒有賽程資料');
+      }
+
+      // 將資料庫資料轉換為 SwimGroup 格式
+      const groupMap = new Map<string, SwimGroup>();
+      
+      data.forEach(row => {
+        const key = `${row.item_number}|${row.group_number}`;
+        
+        if (!groupMap.has(key)) {
+          // 從資料庫第一筆記錄推算 heatTotal
+          const sameEvent = data.filter(r => r.item_number === row.item_number);
+          const maxHeatNum = Math.max(...sameEvent.map(r => r.group_number));
+          
+          groupMap.set(key, {
+            eventNo: row.item_number,
+            heatNum: row.group_number,
+            heatTotal: maxHeatNum,
+            ageGroup: row.age_group,
+            gender: row.gender,
+            eventType: row.event_name,
+            times: [],
+            playerNames: [],
+            avgSeconds: parseMmSs(row.registration_time || '') || 360,
+            dayKey: dayKeyOfEvent(row.item_number),
+            dayLabel: dayLabelOfKey(dayKeyOfEvent(row.item_number)),
+          });
+        }
+        
+        // 收集選手姓名
+        if (row.participant_name && !groupMap.get(key)!.playerNames!.includes(row.participant_name)) {
+          groupMap.get(key)!.playerNames!.push(row.participant_name);
+        }
+        
+        // 收集成績時間
+        const time = parseMmSs(row.registration_time || '');
+        if (time) {
+          groupMap.get(key)!.times.push(time);
+        }
+      });
+
+      // 計算平均時間
+      const groups = Array.from(groupMap.values()).map(g => ({
+        ...g,
+        avgSeconds: g.times.length ? Math.max(...g.times) : 360,
+      }));
+
+      // 處理無成績組別
+      groups.forEach(g => {
+        if (!g.times.length) {
+          const sameEventGroups = groups.filter(other => 
+            other.eventNo === g.eventNo && other.times.length > 0
+          );
+          
+          if (sameEventGroups.length > 0) {
+            const maxTime = Math.max(...sameEventGroups.map(group => group.avgSeconds));
+            g.avgSeconds = maxTime;
+          }
+        }
+      });
+
+      return groups.sort((a, b) => a.eventNo - b.eventNo || a.heatNum - b.heatNum);
+    } catch (error) {
+      console.error('從資料庫載入失敗:', error);
+      throw error;
     }
   };
 
@@ -260,36 +397,26 @@ const SwimmingSchedule = () => {
     try {
       setIsLoading(true);
       
-      // 載入Excel格式的預設資料
-      const excelResponse = await fetch('/schedule-data.xlsx');
-      if (!excelResponse.ok) {
-        throw new Error(`HTTP ${excelResponse.status}: ${excelResponse.statusText}`);
-      }
-      
-      const blob = await excelResponse.blob();
-      const file = new File([blob], 'schedule-data.xlsx', { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-      
-      const fallback = parseMmSs(config.fallback) ?? 360;
-      const newGroups = await parseExcelFile(file, fallback);
-      console.log('解析後組別數:', newGroups.length);
-      console.log('解析後前5組:', newGroups.slice(0, 5));
+      // 從資料庫載入賽程資料
+      const newGroups = await loadScheduleFromDatabase();
+      console.log('從資料庫載入組別數:', newGroups.length);
+      console.log('前5組:', newGroups.slice(0, 5));
       setGroups(newGroups);
       
-      // 檢查載入的項次範圍
       const maxEventNo = Math.max(...newGroups.map(g => g.eventNo));
       console.log('最大項次:', maxEventNo);
       
       toast({
         title: "預設賽程載入成功",
-        description: `成功載入 ${newGroups.length} 組比賽資料（項次 1-${maxEventNo}）`,
+        description: `成功從資料庫載入 ${newGroups.length} 組比賽資料（項次 1-${maxEventNo}）`,
       });
     } catch (error) {
       console.error('載入預設資料失敗:', error);
       let errorMsg = `載入預設賽程失敗：${error instanceof Error ? error.message : '未知錯誤'}`;
       
       if (error instanceof Error) {
-        if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-          errorMsg += '\n\n可能原因：\n1. 網路連線問題\n2. 預設資料檔案缺失';
+        if (error.message.includes('資料庫中沒有賽程資料')) {
+          errorMsg += '\n\n資料庫目前是空的，請先上傳 Excel 檔案來建立資料';
         }
       }
       
