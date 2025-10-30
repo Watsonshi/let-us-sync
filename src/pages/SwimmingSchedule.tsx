@@ -75,10 +75,10 @@ const SwimmingSchedule = () => {
       }
     });
     
-    // 轉換為陣列並產生簡潔的 Day 標籤
-    const days = Array.from(dayMap.entries()).map(([key, originalLabel], index) => ({
+    // 轉換為陣列，使用完整的日期標籤
+    const days = Array.from(dayMap.entries()).map(([key, originalLabel]) => ({
       key,
-      label: `Day ${index + 1}`,
+      label: originalLabel, // 使用完整的日期標籤，例如「第一天（114/10/31，五）」
       originalLabel
     })).sort((a, b) => a.key.localeCompare(b.key));
     
