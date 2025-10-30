@@ -87,18 +87,28 @@ const SwimmingSchedule = () => {
     const allUnitsFromExcel = new Set<string>();
     
     groups.forEach(g => {
-      if (g.playerNames && g.playerNames.length > 0) {
-        g.playerNames.forEach(name => allPlayersFromExcel.add(name));
-      }
       if (g.playerData && g.playerData.length > 0) {
         g.playerData.forEach(p => {
+          // 收集所有單位
           if (p.unit) allUnitsFromExcel.add(p.unit);
+          
+          // 如果有選擇單位，只收集該單位的選手
+          if (p.name) {
+            if (!filters.unitSelect || filters.unitSelect === 'all' || p.unit === filters.unitSelect) {
+              allPlayersFromExcel.add(p.name);
+            }
+          }
         });
+      }
+      // 舊格式兼容：如果沒有 playerData，使用 playerNames
+      if (g.playerNames && g.playerNames.length > 0 && (!filters.unitSelect || filters.unitSelect === 'all')) {
+        g.playerNames.forEach(name => allPlayersFromExcel.add(name));
       }
     });
     
     // 合併 Excel 和 CSV 的選手名單（優先使用 Excel 的）
-    const csvPlayers = getUniquePlayersFromCSV(players);
+    // 如果有選擇單位，CSV 選手不加入
+    const csvPlayers = (!filters.unitSelect || filters.unitSelect === 'all') ? getUniquePlayersFromCSV(players) : [];
     const combinedPlayers = [
       ...Array.from(allPlayersFromExcel),
       ...csvPlayers.filter(name => !allPlayersFromExcel.has(name))
@@ -112,7 +122,7 @@ const SwimmingSchedule = () => {
       units: Array.from(allUnitsFromExcel).sort((a, b) => a.localeCompare(b, 'zh-TW')), // 新增：單位列表
       players: combinedPlayers,
     };
-  }, [groups, players]);
+  }, [groups, players, filters.unitSelect]);
 
   // 應用篩選和計算時間
   const processedGroups = useMemo(() => {
