@@ -96,9 +96,9 @@ export const ControlPanel = ({
               </SelectTrigger>
               <SelectContent className="bg-background border border-border shadow-lg z-50">
                 <SelectItem value="all">全部</SelectItem>
-                <SelectItem value="d1">第一天（114/09/19，五：1–28）</SelectItem>
-                <SelectItem value="d2">第二天（114/09/20，六：29–82）</SelectItem>
-                <SelectItem value="d3">第三天（114/09/21，日：83–136）</SelectItem>
+                <SelectItem value="d1">第一天（114/10/31，五：1–85）</SelectItem>
+                <SelectItem value="d2">第二天（114/11/1，六：86–90）</SelectItem>
+                <SelectItem value="d3">第三天（114/11/2，日：91–136）</SelectItem>
               </SelectContent>
             </Select>
           </div>
