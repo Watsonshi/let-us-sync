@@ -88,8 +88,9 @@ export const buildGroupsFromRows = (rows: Record<string, any>[], fallback: numbe
     const age = (r['年齡組'] ?? '').toString().trim();
     const gender = (r['性別'] ?? '').toString().trim();
     const eventType = (r['比賽項目'] ?? '').toString().trim();
-    const playerName = (r['姓名'] ?? '').toString().trim(); // 新增：取得選手姓名
-    const tSec = parseMmSs((r['報名成績'] ?? '').toString().trim());
+    const playerName = (r['姓名'] ?? '').toString().trim();
+    const timeStr = (r['報名成績'] ?? '').toString().trim();
+    const tSec = parseMmSs(timeStr);
     
     const [numStr, totalStr] = heatStr.split('/');
     const heatNum = parseInt(numStr || '0', 10);
@@ -106,17 +107,28 @@ export const buildGroupsFromRows = (rows: Record<string, any>[], fallback: numbe
         gender,
         eventType,
         times: [],
-        playerNames: [], // 新增：選手姓名列表
+        playerNames: [],
+        playerData: [], // 新增：存儲選手姓名和成績的對應關係
       });
     }
     
-    // 新增：收集選手姓名
+    // 收集選手姓名（去重）
     if (playerName && !map.get(key).playerNames.includes(playerName)) {
       map.get(key).playerNames.push(playerName);
     }
     
+    // 收集成績
     if (tSec != null) {
       map.get(key).times.push(tSec);
+    }
+    
+    // 收集選手和成績的對應（不去重，每個選手都記錄）
+    if (playerName) {
+      map.get(key).playerData.push({
+        name: playerName,
+        time: tSec,
+        timeStr: timeStr, // 保留原始字串格式
+      });
     }
   }
   

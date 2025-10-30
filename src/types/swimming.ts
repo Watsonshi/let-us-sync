@@ -13,7 +13,8 @@ export interface SwimGroup {
   actualEnd?: Date;
   scheduledStart?: Date;
   scheduledEnd?: Date;
-  playerNames?: string[]; // 新增：該組的選手姓名列表
+  playerNames?: string[]; // 該組的選手姓名列表
+  playerData?: Array<{ name: string; time: number | null; timeStr: string }>; // 選手姓名和成績的對應
 }
 
 export interface DayRule {

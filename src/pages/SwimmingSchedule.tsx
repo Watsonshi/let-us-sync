@@ -298,17 +298,30 @@ const SwimmingSchedule = () => {
 
       // 準備要插入的資料
       const scheduleData = groups.flatMap(group => {
-        // 如果該組有選手姓名列表，為每位選手建立一筆記錄
-        if (group.playerNames && group.playerNames.length > 0) {
-          return group.playerNames.map(playerName => ({
+        // 如果該組有選手資料（包含姓名和成績），為每位選手建立一筆記錄
+        if (group.playerData && group.playerData.length > 0) {
+          return group.playerData.map((player: any) => ({
+            item_number: group.eventNo,
+            group_number: group.heatNum,
+            age_group: group.ageGroup,
+            gender: group.gender,
+            event_name: group.eventType,
+            participant_name: player.name,
+            unit: '',
+            registration_time: player.timeStr || null, // 使用選手的報名成績
+          }));
+        }
+        // 如果只有選手姓名列表（舊格式兼容）
+        else if (group.playerNames && group.playerNames.length > 0) {
+          return group.playerNames.map((playerName: string) => ({
             item_number: group.eventNo,
             group_number: group.heatNum,
             age_group: group.ageGroup,
             gender: group.gender,
             event_name: group.eventType,
             participant_name: playerName,
-            unit: '', // Excel 中沒有單位資訊，設為空
-            registration_time: null, // 可以從 times 陣列取得，但目前設為 null
+            unit: '',
+            registration_time: null,
           }));
         } else {
           // 如果沒有選手姓名，建立一筆空記錄
