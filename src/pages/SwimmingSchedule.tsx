@@ -27,7 +27,7 @@ const SwimmingSchedule = () => {
     fallback: '06:00',
   });
   const [filters, setFilters] = useState<FilterOptions>({
-    daySelect: '', // 改為空字串，表示未選擇任何天數
+    daySelect: '', // 改為空字串,表示未選擇任何天數
     ageGroupSelect: 'all',
     genderSelect: 'all',
     eventTypeSelect: 'all',
@@ -43,6 +43,12 @@ const SwimmingSchedule = () => {
         const newGroups = await loadScheduleFromDatabase();
         if (newGroups.length > 0) {
           setGroups(newGroups);
+          
+          // 自動選擇第一天
+          const firstDay = newGroups[0]?.dayKey;
+          if (firstDay) {
+            setFilters(prev => ({ ...prev, daySelect: firstDay }));
+          }
         }
       } catch (error) {
         // 初次載入失敗不顯示錯誤訊息，讓使用者可以手動上傳
@@ -83,6 +89,9 @@ const SwimmingSchedule = () => {
 
   // 應用篩選和計算時間
   const processedGroups = useMemo(() => {
+    console.log('processedGroups 計算中，groups 數量:', groups.length);
+    console.log('當前選擇天數:', filters.daySelect);
+    
     // 如果沒有載入資料或沒有選擇天數，返回空陣列
     if (!groups.length || !filters.daySelect) return [];
 
@@ -158,7 +167,13 @@ const SwimmingSchedule = () => {
 
     // 然後應用篩選
     let filtered = allWithTimes;
-    if (filters.daySelect) filtered = filtered.filter(g => g.dayKey === filters.daySelect);
+    console.log('篩選前總組數:', filtered.length);
+    console.log('篩選前項次範圍:', Math.min(...filtered.map(g => g.eventNo)), '-', Math.max(...filtered.map(g => g.eventNo)));
+    
+    if (filters.daySelect) {
+      filtered = filtered.filter(g => g.dayKey === filters.daySelect);
+      console.log('天數篩選後:', filtered.length, '組');
+    }
     if (filters.ageGroupSelect && filters.ageGroupSelect !== 'all') filtered = filtered.filter(g => g.ageGroup === filters.ageGroupSelect);
     if (filters.genderSelect && filters.genderSelect !== 'all') filtered = filtered.filter(g => g.gender === filters.genderSelect);
     if (filters.eventTypeSelect && filters.eventTypeSelect !== 'all') filtered = filtered.filter(g => g.eventType === filters.eventTypeSelect);
@@ -227,6 +242,8 @@ const SwimmingSchedule = () => {
       });
     }
 
+    console.log('最終篩選結果:', filtered.length, '組');
+    console.log('最終項次範圍:', filtered.length > 0 ? `${Math.min(...filtered.map(g => g.eventNo))}-${Math.max(...filtered.map(g => g.eventNo))}` : '無資料');
     return filtered;
   }, [groups, config, filters]);
 
