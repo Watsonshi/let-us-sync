@@ -89,6 +89,7 @@ export const buildGroupsFromRows = (rows: Record<string, any>[], fallback: numbe
     const gender = (r['性別'] ?? '').toString().trim();
     const eventType = (r['比賽項目'] ?? '').toString().trim();
     const playerName = (r['姓名'] ?? '').toString().trim();
+    const unit = (r['單位'] ?? '').toString().trim(); // 新增：讀取單位欄位
     const timeStr = (r['報名成績'] ?? '').toString().trim();
     const tSec = parseMmSs(timeStr);
     
@@ -126,6 +127,7 @@ export const buildGroupsFromRows = (rows: Record<string, any>[], fallback: numbe
     if (playerName) {
       map.get(key).playerData.push({
         name: playerName,
+        unit: unit, // 新增：包含單位資訊
         time: tSec,
         timeStr: timeStr, // 保留原始字串格式
       });

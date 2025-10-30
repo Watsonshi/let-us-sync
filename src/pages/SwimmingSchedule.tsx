@@ -335,7 +335,7 @@ const SwimmingSchedule = () => {
             gender: group.gender,
             event_name: group.eventType,
             participant_name: player.name,
-            unit: '',
+            unit: player.unit || '', // 使用選手的單位
             registration_time: player.timeStr || null, // 使用選手的報名成績
           }));
         }
