@@ -14,7 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      swimming_schedule: {
+        Row: {
+          age_group: string
+          created_at: string | null
+          event_name: string
+          gender: string
+          group_number: number
+          id: string
+          item_number: number
+          participant_name: string
+          registration_time: string | null
+          unit: string
+          updated_at: string | null
+        }
+        Insert: {
+          age_group: string
+          created_at?: string | null
+          event_name: string
+          gender: string
+          group_number: number
+          id?: string
+          item_number: number
+          participant_name: string
+          registration_time?: string | null
+          unit: string
+          updated_at?: string | null
+        }
+        Update: {
+          age_group?: string
+          created_at?: string | null
+          event_name?: string
+          gender?: string
+          group_number?: number
+          id?: string
+          item_number?: number
+          participant_name?: string
+          registration_time?: string | null
+          unit?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
