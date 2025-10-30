@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 import { CurrentTime } from '@/components/CurrentTime';
 import { ControlPanel } from '@/components/ControlPanel';
@@ -8,11 +9,14 @@ import { SwimGroup, ScheduleConfig, FilterOptions, PlayerData } from '@/types/sw
 import { parseExcelFile, buildGroupsFromRows, dayKeyOfEvent, dayLabelOfKey } from '@/utils/excelUtils';
 import { parseMmSs, parseTimeInputToDate, moveOutOfLunch, addSecondsSkippingLunch, advanceCursor } from '@/utils/timeUtils';
 import { parsePlayerCSV, getUniquePlayersFromCSV } from '@/utils/csvUtils';
-import { Waves, Timer } from 'lucide-react';
+import { Waves, Timer, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 
 const SwimmingSchedule = () => {
+  const navigate = useNavigate();
+  const { user, isAdmin, loading: authLoading, signOut } = useAuth();
   const [groups, setGroups] = useState<SwimGroup[]>([]);
   const [players, setPlayers] = useState<PlayerData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -30,6 +34,26 @@ const SwimmingSchedule = () => {
     playerSelect: 'all',
     playerSearch: '', // 選手名稱搜尋
   });
+
+  // 自動載入資料
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setIsLoading(true);
+        const newGroups = await loadScheduleFromDatabase();
+        if (newGroups.length > 0) {
+          setGroups(newGroups);
+        }
+      } catch (error) {
+        // 初次載入失敗不顯示錯誤訊息，讓使用者可以手動上傳
+        console.log('初次載入資料庫資料失敗:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
+  }, []);
 
   // 計算篩選選項
   const filterOptions = useMemo(() => {
@@ -207,6 +231,16 @@ const SwimmingSchedule = () => {
   }, [groups, config, filters]);
 
   const handleFileSelect = async (file: File) => {
+    // 檢查是否為管理員
+    if (!isAdmin) {
+      toast({
+        title: "權限不足",
+        description: "只有管理員可以上傳檔案",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       setIsLoading(true);
       const fallback = parseMmSs(config.fallback) ?? 360;
@@ -487,7 +521,39 @@ const SwimmingSchedule = () => {
               </p>
             </div>
           </div>
-          <div className="sm:ml-auto">
+          <div className="sm:ml-auto flex items-center gap-4">
+            {user && (
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-muted-foreground">
+                  {user.email}
+                  {isAdmin && (
+                    <span className="ml-2 px-2 py-1 bg-primary/10 text-primary rounded-md text-xs font-medium">
+                      管理員
+                    </span>
+                  )}
+                </span>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={async () => {
+                    await signOut();
+                    navigate('/auth');
+                  }}
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  登出
+                </Button>
+              </div>
+            )}
+            {!user && !authLoading && (
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => navigate('/auth')}
+              >
+                登入
+              </Button>
+            )}
             <CurrentTime />
           </div>
         </header>
@@ -505,12 +571,29 @@ const SwimmingSchedule = () => {
         />
 
         {/* File Upload */}
-        <FileUpload
-          onFileSelect={handleFileSelect}
-          onLoadDefault={handleLoadDefault}
-          onLoadPlayerList={handleLoadPlayerList}
-          isLoading={isLoading}
-        />
+        {isAdmin && (
+          <FileUpload
+            onFileSelect={handleFileSelect}
+            onLoadDefault={handleLoadDefault}
+            onLoadPlayerList={handleLoadPlayerList}
+            isLoading={isLoading}
+          />
+        )}
+        
+        {!isAdmin && !authLoading && (
+          <div className="bg-background rounded-xl border border-border/50 p-6 shadow-sm text-center">
+            <p className="text-muted-foreground">
+              檔案上傳功能僅限管理員使用。請先 
+              <button 
+                onClick={() => navigate('/auth')}
+                className="text-primary hover:underline mx-1"
+              >
+                登入
+              </button>
+              以管理賽程資料。
+            </p>
+          </div>
+        )}
 
         {/* Day Navigation */}
         {filterOptions.days.length > 0 && (
