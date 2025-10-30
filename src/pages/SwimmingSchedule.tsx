@@ -341,32 +341,47 @@ const SwimmingSchedule = () => {
 
   const loadScheduleFromDatabase = async (): Promise<SwimGroup[]> => {
     try {
-      // Supabase 預設只返回 1000 筆，需要明確指定範圍載入所有資料
-      const { data, error, count } = await supabase
-        .from('swimming_schedule')
-        .select('*', { count: 'exact' })
-        .order('item_number', { ascending: true })
-        .order('group_number', { ascending: true })
-        .range(0, 9999); // 載入前 10000 筆（遠超過實際資料量）
+      // 分批載入所有資料以避免 Supabase 的預設限制
+      let allData: any[] = [];
+      let hasMore = true;
+      let offset = 0;
+      const batchSize = 1000;
       
-      if (error) throw error;
+      while (hasMore) {
+        const { data, error } = await supabase
+          .from('swimming_schedule')
+          .select('*')
+          .order('item_number', { ascending: true })
+          .order('group_number', { ascending: true })
+          .range(offset, offset + batchSize - 1);
+        
+        if (error) throw error;
+        
+        if (data && data.length > 0) {
+          allData = allData.concat(data);
+          offset += batchSize;
+          hasMore = data.length === batchSize; // 如果返回數量少於批次大小，表示已經是最後一批
+        } else {
+          hasMore = false;
+        }
+      }
       
-      console.log(`從資料庫載入 ${data?.length} 筆記錄，總計 ${count} 筆`);
+      console.log(`從資料庫載入 ${allData.length} 筆記錄（分批載入）`);
       
-      if (!data || data.length === 0) {
+      if (allData.length === 0) {
         throw new Error('資料庫中沒有賽程資料');
       }
 
       // 將資料庫資料轉換為 SwimGroup 格式
       const groupMap = new Map<string, SwimGroup>();
       
-      data.forEach(row => {
+      allData.forEach(row => {
         const key = `${row.item_number}|${row.group_number}`;
         
         if (!groupMap.has(key)) {
           // 從資料庫第一筆記錄推算 heatTotal
-          const sameEvent = data.filter(r => r.item_number === row.item_number && r.group_number === row.group_number);
-          const allGroupsInEvent = data.filter(r => r.item_number === row.item_number);
+          const sameEvent = allData.filter(r => r.item_number === row.item_number && r.group_number === row.group_number);
+          const allGroupsInEvent = allData.filter(r => r.item_number === row.item_number);
           const maxHeatNum = Math.max(...allGroupsInEvent.map(r => r.group_number));
           
           groupMap.set(key, {
