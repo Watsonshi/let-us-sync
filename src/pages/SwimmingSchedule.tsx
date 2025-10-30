@@ -288,6 +288,10 @@ const SwimmingSchedule = () => {
 
   const saveScheduleToDatabase = async (groups: SwimGroup[]) => {
     try {
+      // 除錯：檢查第一組的 playerData
+      console.log('準備儲存的第一組資料:', groups[0]);
+      console.log('第一組的 playerData:', groups[0]?.playerData);
+      
       // 先刪除所有現有資料
       const { error: deleteError } = await supabase
         .from('swimming_schedule')
@@ -300,6 +304,7 @@ const SwimmingSchedule = () => {
       const scheduleData = groups.flatMap(group => {
         // 如果該組有選手資料（包含姓名和成績），為每位選手建立一筆記錄
         if (group.playerData && group.playerData.length > 0) {
+          console.log(`項次 ${group.eventNo} 組 ${group.heatNum} 使用 playerData，共 ${group.playerData.length} 位選手`);
           return group.playerData.map((player: any) => ({
             item_number: group.eventNo,
             group_number: group.heatNum,
@@ -313,6 +318,7 @@ const SwimmingSchedule = () => {
         }
         // 如果只有選手姓名列表（舊格式兼容）
         else if (group.playerNames && group.playerNames.length > 0) {
+          console.log(`項次 ${group.eventNo} 組 ${group.heatNum} 使用 playerNames（舊格式）`);
           return group.playerNames.map((playerName: string) => ({
             item_number: group.eventNo,
             group_number: group.heatNum,
@@ -337,6 +343,8 @@ const SwimmingSchedule = () => {
           }];
         }
       });
+      
+      console.log('準備寫入的前3筆資料:', scheduleData.slice(0, 3));
 
       // 批次插入資料
       const { error: insertError } = await supabase
