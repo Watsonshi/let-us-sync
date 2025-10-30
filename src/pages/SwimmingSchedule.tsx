@@ -467,21 +467,39 @@ const SwimmingSchedule = () => {
             eventType: row.event_name,
             times: [],
             playerNames: [],
+            playerData: [], // 新增 playerData 陣列
             avgSeconds: parseMmSs(row.registration_time || '') || 360,
             dayKey: dayKeyOfEvent(row.item_number),
             dayLabel: dayLabelOfKey(dayKeyOfEvent(row.item_number)),
           });
         }
         
-        // 收集選手姓名
-        if (row.participant_name && !groupMap.get(key)!.playerNames!.includes(row.participant_name)) {
-          groupMap.get(key)!.playerNames!.push(row.participant_name);
+        const group = groupMap.get(key)!;
+        
+        // 收集選手姓名和完整資料
+        if (row.participant_name) {
+          // 收集到 playerNames（向後兼容）
+          if (!group.playerNames!.includes(row.participant_name)) {
+            group.playerNames!.push(row.participant_name);
+          }
+          
+          // 收集到 playerData（包含 unit 和成績）
+          if (!group.playerData) {
+            group.playerData = [];
+          }
+          const time = parseMmSs(row.registration_time || '');
+          group.playerData.push({
+            name: row.participant_name,
+            timeStr: row.registration_time || '',
+            unit: row.unit || '', // 加入單位資訊
+            time: time, // 加入解析後的時間（秒數）
+          });
         }
         
         // 收集成績時間
         const time = parseMmSs(row.registration_time || '');
         if (time) {
-          groupMap.get(key)!.times.push(time);
+          group.times.push(time);
         }
       });
 
