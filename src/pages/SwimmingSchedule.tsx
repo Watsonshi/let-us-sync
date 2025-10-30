@@ -39,20 +39,23 @@ const SwimmingSchedule = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
+        console.log('開始自動載入資料...');
         setIsLoading(true);
         const newGroups = await loadScheduleFromDatabase();
+        console.log('自動載入完成，組數:', newGroups.length);
         if (newGroups.length > 0) {
           setGroups(newGroups);
           
           // 自動選擇第一天
           const firstDay = newGroups[0]?.dayKey;
+          console.log('自動選擇天數:', firstDay);
           if (firstDay) {
             setFilters(prev => ({ ...prev, daySelect: firstDay }));
           }
         }
       } catch (error) {
         // 初次載入失敗不顯示錯誤訊息，讓使用者可以手動上傳
-        console.log('初次載入資料庫資料失敗:', error);
+        console.error('自動載入資料庫資料失敗:', error);
       } finally {
         setIsLoading(false);
       }
