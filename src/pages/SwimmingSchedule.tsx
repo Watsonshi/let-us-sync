@@ -301,6 +301,27 @@ const SwimmingSchedule = () => {
 
     console.log('最終篩選結果:', filtered.length, '組');
     console.log('最終項次範圍:', filtered.length > 0 ? `${Math.min(...filtered.map(g => g.eventNo))}-${Math.max(...filtered.map(g => g.eventNo))}` : '無資料');
+    
+    // 自動隱藏已完賽組別，只保留當前比賽組別前15項
+    if (filtered.length > 0) {
+      // 找到當前比賽組別（第一個沒有actualEnd的組別）
+      const currentGroupIndex = filtered.findIndex(g => !g.actualEnd);
+      
+      if (currentGroupIndex !== -1) {
+        // 計算要保留的範圍：當前組別往前15項（包括當前組別）
+        const startIndex = Math.max(0, currentGroupIndex - 14);
+        const endIndex = filtered.length; // 保留當前組別及之後的所有組別
+        
+        // 只保留範圍內的組別
+        filtered = filtered.slice(startIndex, endIndex);
+        console.log(`自動隱藏已完賽組別：保留索引 ${startIndex} 到 ${endIndex-1}，共 ${filtered.length} 組`);
+      } else {
+        // 如果所有組別都已完賽，只保留最後15項
+        filtered = filtered.slice(-15);
+        console.log('所有組別已完賽，保留最後15項');
+      }
+    }
+    
     return filtered;
   }, [groups, config, filters]);
 
