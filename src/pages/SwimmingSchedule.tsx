@@ -320,6 +320,10 @@ const SwimmingSchedule = () => {
         // 如果所有組別都已完賽，只保留最後15項
         filtered = filtered.slice(-15);
         console.log('所有組別已完賽，保留最後15項');
+      } else if (currentGroupIndex === 0) {
+        // 如果當前組別是第一個（還沒開始比賽），只顯示前15項
+        filtered = filtered.slice(0, 15);
+        console.log('尚未開始比賽，只顯示前15項');
       } else {
         // 保留範圍：從當前組別往前14項（如果存在）到結束
         const startIndex = Math.max(0, currentGroupIndex - 14);
