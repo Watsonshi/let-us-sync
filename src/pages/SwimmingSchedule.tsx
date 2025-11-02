@@ -5,6 +5,7 @@ import { CurrentTime } from '@/components/CurrentTime';
 import { ControlPanel } from '@/components/ControlPanel';
 import { FileUpload } from '@/components/FileUpload';
 import { ScheduleTable } from '@/components/ScheduleTable';
+import { CurrentRaceCard } from '@/components/CurrentRaceCard';
 import { SwimGroup, ScheduleConfig, FilterOptions, PlayerData } from '@/types/swimming';
 import { parseExcelFile, buildGroupsFromRows, dayKeyOfEvent, dayLabelOfKey } from '@/utils/excelUtils';
 import { parseMmSs, parseTimeInputToDate, addSeconds } from '@/utils/timeUtils';
@@ -314,6 +315,36 @@ const SwimmingSchedule = () => {
     
     return filtered;
   }, [groups, config, filters]);
+
+  // 計算當前比賽組別和準備檢錄組別
+  const { currentGroup, inspectionGroup } = useMemo(() => {
+    const now = new Date();
+    
+    // 找到當前正在比賽的組別（當前時間在 scheduledStart 和 actualEnd/scheduledEnd 之間）
+    const currentIndex = processedGroups.findIndex(g => {
+      const start = g.scheduledStart;
+      const end = g.actualEnd || g.scheduledEnd;
+      return now >= start && now <= end;
+    });
+    
+    // 如果找不到正在比賽的組別，找到第一個還沒開始的組別
+    const currentIdx = currentIndex === -1 
+      ? processedGroups.findIndex(g => now < g.scheduledStart)
+      : currentIndex;
+    
+    const current = currentIdx !== -1 ? processedGroups[currentIdx] : null;
+    
+    // 準備檢錄組別為當前組別往後第10組
+    const inspectionIdx = currentIdx !== -1 ? currentIdx + 10 : -1;
+    const inspection = inspectionIdx !== -1 && inspectionIdx < processedGroups.length 
+      ? processedGroups[inspectionIdx] 
+      : null;
+    
+    return {
+      currentGroup: current,
+      inspectionGroup: inspection
+    };
+  }, [processedGroups]);
 
   const handleFileSelect = async (file: File) => {
     // 檢查是否為管理員
@@ -774,6 +805,14 @@ const SwimmingSchedule = () => {
               ))}
             </div>
           </div>
+        )}
+
+        {/* Current Race Card */}
+        {filters.daySelect && processedGroups.length > 0 && (
+          <CurrentRaceCard 
+            currentGroup={currentGroup}
+            inspectionGroup={inspectionGroup}
+          />
         )}
 
         {/* Schedule Table */}
