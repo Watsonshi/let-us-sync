@@ -7,7 +7,7 @@ import { FileUpload } from '@/components/FileUpload';
 import { ScheduleTable } from '@/components/ScheduleTable';
 import { SwimGroup, ScheduleConfig, FilterOptions, PlayerData } from '@/types/swimming';
 import { parseExcelFile, buildGroupsFromRows, dayKeyOfEvent, dayLabelOfKey } from '@/utils/excelUtils';
-import { parseMmSs, parseTimeInputToDate, moveOutOfLunch, addSecondsSkippingLunch, advanceCursor } from '@/utils/timeUtils';
+import { parseMmSs, parseTimeInputToDate, addSeconds } from '@/utils/timeUtils';
 import { parsePlayerCSV, getUniquePlayersFromCSV } from '@/utils/csvUtils';
 import { saveActualTime, removeActualTime, loadActualTime, clearAllActualTimes, getActualTimeCount } from '@/utils/actualTimeStorage';
 import { Waves, Timer, LogOut } from 'lucide-react';
@@ -23,8 +23,6 @@ const SwimmingSchedule = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [config, setConfig] = useState<ScheduleConfig>({
     turnover: 20,
-    lunchStart: '12:00',
-    lunchEnd: '13:30',
     fallback: '06:00',
   });
   const [filters, setFilters] = useState<FilterOptions>({
@@ -41,23 +39,19 @@ const SwimmingSchedule = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        console.log('開始自動載入資料...');
         setIsLoading(true);
         const newGroups = await loadScheduleFromDatabase();
-        console.log('自動載入完成，組數:', newGroups.length);
         if (newGroups.length > 0) {
           setGroups(newGroups);
           
           // 自動選擇第一天
           const firstDay = newGroups[0]?.dayKey;
-          console.log('自動選擇天數:', firstDay);
           if (firstDay) {
             setFilters(prev => ({ ...prev, daySelect: firstDay }));
           }
         }
       } catch (error) {
         // 初次載入失敗不顯示錯誤訊息，讓使用者可以手動上傳
-        console.error('自動載入資料庫資料失敗:', error);
       } finally {
         setIsLoading(false);
       }
@@ -127,15 +121,10 @@ const SwimmingSchedule = () => {
 
   // 應用篩選和計算時間
   const processedGroups = useMemo(() => {
-    console.log('processedGroups 計算中，groups 數量:', groups.length);
-    console.log('當前選擇天數:', filters.daySelect);
-    
     // 如果沒有載入資料或沒有選擇天數，返回空陣列
     if (!groups.length || !filters.daySelect) return [];
 
     const base = new Date();
-    const Ls = parseTimeInputToDate(base, config.lunchStart);
-    const Le = parseTimeInputToDate(base, config.lunchEnd);
     const fallbackSeconds = parseMmSs(config.fallback) ?? 360;
 
     // 更新平均時間
@@ -183,35 +172,31 @@ const SwimmingSchedule = () => {
       if (i > 0 && allSorted[i - 1].dayLabel === g.dayLabel) {
         const prev = allSorted[i - 1];
         if (prev.actualEnd) {
-          cursor = advanceCursor(prev.actualEnd, config.turnover, Ls, Le);
+          cursor = addSeconds(prev.actualEnd, config.turnover);
         }
       }
 
-      cursor = moveOutOfLunch(cursor!, Ls, Le);
       const estStart = new Date(cursor!);
-      const estEnd = addSecondsSkippingLunch(estStart, g.avgSeconds, Ls, Le);
+      const estEnd = addSeconds(estStart, g.avgSeconds);
 
       const updatedGroup = {
         ...g,
         scheduledStart: estStart,
         scheduledEnd: estEnd,
-        actualEnd: g.actualEnd, // 保留 actualEnd 屬性
+        actualEnd: g.actualEnd,
       };
 
       const displayEnd = g.actualEnd ?? estEnd;
-      cursor = advanceCursor(displayEnd, config.turnover, Ls, Le);
+      cursor = addSeconds(displayEnd, config.turnover);
 
       return updatedGroup;
     });
 
     // 然後應用篩選
     let filtered = allWithTimes;
-    console.log('篩選前總組數:', filtered.length);
-    console.log('篩選前項次範圍:', Math.min(...filtered.map(g => g.eventNo)), '-', Math.max(...filtered.map(g => g.eventNo)));
     
     if (filters.daySelect) {
       filtered = filtered.filter(g => g.dayKey === filters.daySelect);
-      console.log('天數篩選後:', filtered.length, '組');
     }
     if (filters.ageGroupSelect && filters.ageGroupSelect !== 'all') filtered = filtered.filter(g => g.ageGroup === filters.ageGroupSelect);
     if (filters.genderSelect && filters.genderSelect !== 'all') filtered = filtered.filter(g => g.gender === filters.genderSelect);
@@ -299,9 +284,6 @@ const SwimmingSchedule = () => {
         return matchingPlayers.length > 0;
       });
     }
-
-    console.log('最終篩選結果:', filtered.length, '組');
-    console.log('最終項次範圍:', filtered.length > 0 ? `${Math.min(...filtered.map(g => g.eventNo))}-${Math.max(...filtered.map(g => g.eventNo))}` : '無資料');
     
     // 自動隱藏已完賽組別，只保留當前比賽組別前15項
     if (filtered.length > 15) {
@@ -323,12 +305,10 @@ const SwimmingSchedule = () => {
       // 如果還是找不到（所有組別都已結束），顯示最後15項
       if (currentGroupIndex === -1) {
         filtered = filtered.slice(-15);
-        console.log('所有組別已結束，顯示最後15項');
       } else {
         // 保留當前組別及其前14項（共15項）到結尾
         const startIndex = Math.max(0, currentGroupIndex - 14);
         filtered = filtered.slice(startIndex);
-        console.log(`當前組別索引 ${currentGroupIndex}，從索引 ${startIndex} 開始保留，共 ${filtered.length} 組`);
       }
     }
     
@@ -373,10 +353,6 @@ const SwimmingSchedule = () => {
 
   const saveScheduleToDatabase = async (groups: SwimGroup[]) => {
     try {
-      // 除錯：檢查第一組的 playerData
-      console.log('準備儲存的第一組資料:', groups[0]);
-      console.log('第一組的 playerData:', groups[0]?.playerData);
-      
       // 先刪除所有現有資料
       const { error: deleteError } = await supabase
         .from('swimming_schedule')
@@ -389,7 +365,6 @@ const SwimmingSchedule = () => {
       const scheduleData = groups.flatMap(group => {
         // 如果該組有選手資料（包含姓名和成績），為每位選手建立一筆記錄
         if (group.playerData && group.playerData.length > 0) {
-          console.log(`項次 ${group.eventNo} 組 ${group.heatNum} 使用 playerData，共 ${group.playerData.length} 位選手`);
           return group.playerData.map((player: any) => ({
             item_number: group.eventNo,
             group_number: group.heatNum,
@@ -403,7 +378,6 @@ const SwimmingSchedule = () => {
         }
         // 如果只有選手姓名列表（舊格式兼容）
         else if (group.playerNames && group.playerNames.length > 0) {
-          console.log(`項次 ${group.eventNo} 組 ${group.heatNum} 使用 playerNames（舊格式）`);
           return group.playerNames.map((playerName: string) => ({
             item_number: group.eventNo,
             group_number: group.heatNum,
@@ -428,8 +402,6 @@ const SwimmingSchedule = () => {
           }];
         }
       });
-      
-      console.log('準備寫入的前3筆資料:', scheduleData.slice(0, 3));
 
       // 批次插入資料
       const { error: insertError } = await supabase
@@ -437,10 +409,7 @@ const SwimmingSchedule = () => {
         .insert(scheduleData);
       
       if (insertError) throw insertError;
-      
-      console.log(`成功寫入 ${scheduleData.length} 筆賽程資料到資料庫`);
     } catch (error) {
-      console.error('寫入資料庫失敗:', error);
       throw new Error('更新資料庫失敗：' + (error instanceof Error ? error.message : '未知錯誤'));
     }
   };
@@ -471,8 +440,6 @@ const SwimmingSchedule = () => {
           hasMore = false;
         }
       }
-      
-      console.log(`從資料庫載入 ${allData.length} 筆記錄（分批載入）`);
       
       if (allData.length === 0) {
         throw new Error('資料庫中沒有賽程資料');
@@ -540,9 +507,6 @@ const SwimmingSchedule = () => {
         ...g,
         avgSeconds: g.times.length ? Math.max(...g.times) : 360,
       }));
-      
-      console.log(`groupMap 大小: ${groupMap.size}, 轉換後 groups 數量: ${groups.length}`);
-      console.log(`項次範圍: ${Math.min(...groups.map(g => g.eventNo))}-${Math.max(...groups.map(g => g.eventNo))}`);
 
       // 處理無成績組別
       groups.forEach(g => {
@@ -566,10 +530,8 @@ const SwimmingSchedule = () => {
         return actualEnd ? { ...group, actualEnd } : group;
       });
       
-      console.log('合併實際時間後的資料');
       return groupsWithActualTimes;
     } catch (error) {
-      console.error('從資料庫載入失敗:', error);
       throw error;
     }
   };
@@ -592,7 +554,6 @@ const SwimmingSchedule = () => {
         description: `成功載入 ${getUniquePlayersFromCSV(playerData).length} 位選手資料`,
       });
     } catch (error) {
-      console.error('載入選手名單失敗:', error);
       toast({
         title: "載入失敗",
         description: error instanceof Error ? error.message : "未知錯誤",
@@ -609,19 +570,15 @@ const SwimmingSchedule = () => {
       
       // 從資料庫載入賽程資料
       const newGroups = await loadScheduleFromDatabase();
-      console.log('從資料庫載入組別數:', newGroups.length);
-      console.log('前5組:', newGroups.slice(0, 5));
       setGroups(newGroups);
       
       const maxEventNo = Math.max(...newGroups.map(g => g.eventNo));
-      console.log('最大項次:', maxEventNo);
       
       toast({
         title: "預設賽程載入成功",
         description: `成功從資料庫載入 ${newGroups.length} 組比賽資料（項次 1-${maxEventNo}）`,
       });
     } catch (error) {
-      console.error('載入預設資料失敗:', error);
       let errorMsg = `載入預設賽程失敗：${error instanceof Error ? error.message : '未知錯誤'}`;
       
       if (error instanceof Error) {
@@ -821,22 +778,10 @@ const SwimmingSchedule = () => {
 
         {/* Schedule Table */}
         {filters.daySelect && processedGroups.length > 0 ? (
-          <>
-            {/* 調試信息顯示 */}
-            <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3 mb-4 text-sm">
-              <div className="text-foreground">
-                <strong>調試信息：</strong> 顯示 {processedGroups.length} 組 / 總共 {groups.filter(g => g.dayKey === filters.daySelect).length} 組
-              </div>
-              <div className="text-muted-foreground text-xs mt-1">
-                已完賽: {processedGroups.filter(g => g.actualEnd).length} 組
-              </div>
-            </div>
-            
-            <ScheduleTable
+          <ScheduleTable
               groups={processedGroups}
               onActualEndChange={handleActualEndChange}
             />
-          </>
         ) : groups.length > 0 && !filters.daySelect ? (
           <div className="text-center py-12">
             <div className="p-6 bg-muted/50 rounded-2xl inline-block">

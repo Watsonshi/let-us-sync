@@ -28,32 +28,6 @@ export const addSeconds = (d: Date, s: number): Date => {
   return nd;
 };
 
-export const moveOutOfLunch = (d: Date, Ls: Date, Le: Date): Date => 
-  (d >= Ls && d < Le) ? new Date(Le) : d;
-
-export const addSecondsSkippingLunch = (
-  start: Date,
-  secs: number,
-  Ls: Date,
-  Le: Date
-): Date => {
-  let s = moveOutOfLunch(new Date(start), Ls, Le);
-  let e = addSeconds(s, secs);
-  
-  if (s < Ls && e > Ls) {
-    const before = (Ls.getTime() - s.getTime()) / 1000;
-    const remain = secs - before;
-    e = addSeconds(Le, remain);
-  } else if (s >= Ls && s < Le) {
-    e = addSeconds(Le, secs);
-  }
-  
-  return e;
-};
-
-export const advanceCursor = (prevEnd: Date, turnover: number, Ls: Date, Le: Date): Date =>
-  moveOutOfLunch(addSeconds(prevEnd, turnover), Ls, Le);
-
 export const mmss = (s: number): string => {
   if (s == null || isNaN(s)) return '';
   const mm = Math.floor(s / 60);

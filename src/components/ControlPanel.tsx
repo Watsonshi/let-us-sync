@@ -75,30 +75,6 @@ export const ControlPanel = ({
               )}
             </div>
           </div>
-          {/* 時間配置設定 */}
-          <div className="grid grid-cols-2 gap-4 mb-4">
-            <div className="space-y-2">
-              <Label htmlFor="lunchStart" className="text-sm font-medium">午休開始</Label>
-              <Input
-                id="lunchStart"
-                type="time"
-                value={config.lunchStart}
-                onChange={(e) => onConfigChange({ ...config, lunchStart: e.target.value })}
-                className="h-9"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="lunchEnd" className="text-sm font-medium">午休結束</Label>
-              <Input
-                id="lunchEnd"
-                type="time"
-                value={config.lunchEnd}
-                onChange={(e) => onConfigChange({ ...config, lunchEnd: e.target.value })}
-                className="h-9"
-              />
-            </div>
-          </div>
 
           {/* 篩選器 */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">

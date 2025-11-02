@@ -44,7 +44,5 @@ export interface PlayerData {
 
 export interface ScheduleConfig {
   turnover: number;
-  lunchStart: string;
-  lunchEnd: string;
   fallback: string;
 }
