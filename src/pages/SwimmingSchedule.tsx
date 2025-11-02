@@ -303,36 +303,33 @@ const SwimmingSchedule = () => {
     console.log('最終篩選結果:', filtered.length, '組');
     console.log('最終項次範圍:', filtered.length > 0 ? `${Math.min(...filtered.map(g => g.eventNo))}-${Math.max(...filtered.map(g => g.eventNo))}` : '無資料');
     
-    // 除錯：檢查有多少組有 actualEnd
-    const completedCount = filtered.filter(g => g.actualEnd).length;
-    console.log('已完賽組別數:', completedCount);
-    console.log('第一個組別的 actualEnd:', filtered[0]?.actualEnd);
-    
     // 自動隱藏已完賽組別，只保留當前比賽組別前15項
     if (filtered.length > 15) {
-      console.log('進入自動隱藏邏輯（總組數 > 15）');
+      const now = new Date();
       
-      // 找到第一個沒有actualEnd的組別（當前比賽組別）
-      const currentGroupIndex = filtered.findIndex(g => !g.actualEnd);
-      console.log('當前比賽組別索引:', currentGroupIndex);
+      // 找到當前正在比賽的組別（當前時間在 scheduledStart 和 scheduledEnd 之間）
+      // 或者找到即將比賽的組別（當前時間還沒到 scheduledStart）
+      let currentGroupIndex = filtered.findIndex(g => {
+        const start = g.scheduledStart;
+        const end = g.actualEnd || g.scheduledEnd;
+        return now >= start && now <= end;
+      });
       
+      // 如果找不到正在比賽的組別，找到第一個還沒開始的組別
       if (currentGroupIndex === -1) {
-        // 如果所有組別都已完賽，只保留最後15項
-        filtered = filtered.slice(-15);
-        console.log('所有組別已完賽，保留最後15項');
-      } else if (currentGroupIndex === 0) {
-        // 如果當前組別是第一個（還沒開始比賽），只顯示前15項
-        filtered = filtered.slice(0, 15);
-        console.log('尚未開始比賽，只顯示前15項');
-      } else {
-        // 保留範圍：從當前組別往前14項（如果存在）到結束
-        const startIndex = Math.max(0, currentGroupIndex - 14);
-        
-        filtered = filtered.slice(startIndex);
-        console.log(`自動隱藏：從索引 ${startIndex}（當前組別索引：${currentGroupIndex}）開始保留，共 ${filtered.length} 組`);
+        currentGroupIndex = filtered.findIndex(g => now < g.scheduledStart);
       }
-    } else {
-      console.log('總組數 <= 15，不執行自動隱藏');
+      
+      // 如果還是找不到（所有組別都已結束），顯示最後15項
+      if (currentGroupIndex === -1) {
+        filtered = filtered.slice(-15);
+        console.log('所有組別已結束，顯示最後15項');
+      } else {
+        // 保留當前組別及其前14項（共15項）到結尾
+        const startIndex = Math.max(0, currentGroupIndex - 14);
+        filtered = filtered.slice(startIndex);
+        console.log(`當前組別索引 ${currentGroupIndex}，從索引 ${startIndex} 開始保留，共 ${filtered.length} 組`);
+      }
     }
     
     return filtered;
