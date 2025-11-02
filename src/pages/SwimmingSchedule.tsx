@@ -304,7 +304,7 @@ const SwimmingSchedule = () => {
     console.log('最終項次範圍:', filtered.length > 0 ? `${Math.min(...filtered.map(g => g.eventNo))}-${Math.max(...filtered.map(g => g.eventNo))}` : '無資料');
     
     // 自動隱藏已完賽組別，只保留當前比賽組別前15項
-    if (filtered.length > 0) {
+    if (filtered.length > 15) {
       // 找到第一個沒有actualEnd的組別（當前比賽組別）
       const currentGroupIndex = filtered.findIndex(g => !g.actualEnd);
       
@@ -312,15 +312,13 @@ const SwimmingSchedule = () => {
         // 如果所有組別都已完賽，只保留最後15項
         filtered = filtered.slice(-15);
         console.log('所有組別已完賽，保留最後15項');
-      } else if (currentGroupIndex > 0) {
-        // 如果有組別完賽（當前組別不是第一個），則開始隱藏已完賽組別
+      } else {
         // 保留範圍：從當前組別往前14項（如果存在）到結束
         const startIndex = Math.max(0, currentGroupIndex - 14);
         
         filtered = filtered.slice(startIndex);
-        console.log(`自動隱藏已完賽組別：從索引 ${startIndex} 開始保留，共 ${filtered.length} 組`);
+        console.log(`自動隱藏：從索引 ${startIndex}（當前組別索引：${currentGroupIndex}）開始保留，共 ${filtered.length} 組`);
       }
-      // 如果 currentGroupIndex === 0（還沒有任何組別完賽），則不隱藏任何組別
     }
     
     return filtered;
