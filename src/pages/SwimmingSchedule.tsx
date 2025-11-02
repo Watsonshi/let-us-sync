@@ -823,10 +823,22 @@ const SwimmingSchedule = () => {
 
         {/* Schedule Table */}
         {filters.daySelect && processedGroups.length > 0 ? (
-          <ScheduleTable
-            groups={processedGroups}
-            onActualEndChange={handleActualEndChange}
-          />
+          <>
+            {/* 調試信息顯示 */}
+            <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3 mb-4 text-sm">
+              <div className="text-foreground">
+                <strong>調試信息：</strong> 顯示 {processedGroups.length} 組 / 總共 {groups.filter(g => g.dayKey === filters.daySelect).length} 組
+              </div>
+              <div className="text-muted-foreground text-xs mt-1">
+                已完賽: {processedGroups.filter(g => g.actualEnd).length} 組
+              </div>
+            </div>
+            
+            <ScheduleTable
+              groups={processedGroups}
+              onActualEndChange={handleActualEndChange}
+            />
+          </>
         ) : groups.length > 0 && !filters.daySelect ? (
           <div className="text-center py-12">
             <div className="p-6 bg-muted/50 rounded-2xl inline-block">
