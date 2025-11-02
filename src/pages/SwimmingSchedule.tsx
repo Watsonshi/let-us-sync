@@ -321,19 +321,42 @@ const SwimmingSchedule = () => {
   const { currentGroup, inspectionGroup } = useMemo(() => {
     const now = new Date();
     
+    console.log('=== 檢查當前比賽組別 ===');
+    console.log('當前時間:', now.toLocaleTimeString());
+    console.log('processedGroups 數量:', processedGroups.length);
+    
     // 找到當前正在比賽的組別（當前時間在 scheduledStart 和 actualEnd/scheduledEnd 之間）
-    const currentIndex = processedGroups.findIndex(g => {
+    const currentIndex = processedGroups.findIndex((g, idx) => {
       const start = g.scheduledStart;
       const end = g.actualEnd || g.scheduledEnd;
-      return now >= start && now <= end;
+      const isInRange = now >= start && now <= end;
+      
+      if (idx < 5) { // 只顯示前5組的資訊
+        console.log(`組別 ${idx}: 項次${g.eventNo} ${g.heatNum}/${g.heatTotal}`);
+        console.log(`  scheduledStart: ${start.toLocaleTimeString()}`);
+        console.log(`  scheduledEnd: ${g.scheduledEnd.toLocaleTimeString()}`);
+        console.log(`  actualEnd: ${g.actualEnd ? g.actualEnd.toLocaleTimeString() : '無'}`);
+        console.log(`  使用的結束時間: ${end.toLocaleTimeString()}`);
+        console.log(`  是否在範圍內: ${isInRange}`);
+      }
+      
+      return isInRange;
     });
+    
+    console.log('找到的 currentIndex:', currentIndex);
     
     // 如果找不到正在比賽的組別，找到第一個還沒開始的組別
     const currentIdx = currentIndex === -1 
       ? processedGroups.findIndex(g => now < g.scheduledStart)
       : currentIndex;
     
+    console.log('最終的 currentIdx:', currentIdx);
+    
     const current = currentIdx !== -1 ? processedGroups[currentIdx] : null;
+    
+    if (current) {
+      console.log('當前比賽組別:', `項次${current.eventNo} ${current.heatNum}/${current.heatTotal}`);
+    }
     
     // 準備檢錄組別為當前組別往後第10組
     const inspectionIdx = currentIdx !== -1 ? currentIdx + 10 : -1;
@@ -668,6 +691,10 @@ const SwimmingSchedule = () => {
       const newGroups = [...groups];
       newGroups[originalIndex].actualEnd = d;
       setGroups(newGroups);
+      
+      console.log('=== 更新實際結束時間 ===');
+      console.log(`項次 ${targetGroup.eventNo} 組次 ${targetGroup.heatNum}`);
+      console.log('新的實際結束時間:', d.toLocaleTimeString());
       
       // 同步寫入 localStorage
       saveActualTime(targetGroup.eventNo, targetGroup.heatNum, d);
