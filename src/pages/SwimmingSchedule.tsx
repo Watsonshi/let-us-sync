@@ -35,6 +35,7 @@ const SwimmingSchedule = () => {
     playerSelect: 'all',
     playerSearch: '', // 選手名稱搜尋
   });
+  const [actualTimeVersion, setActualTimeVersion] = useState(0);
 
   // 自動載入資料
   useEffect(() => {
@@ -314,7 +315,7 @@ const SwimmingSchedule = () => {
     }
     
     return filtered;
-  }, [groups, config, filters]);
+  }, [groups, config, filters, actualTimeVersion]);
 
   // 計算當前比賽組別和準備檢錄組別
   const { currentGroup, inspectionGroup } = useMemo(() => {
@@ -647,6 +648,9 @@ const SwimmingSchedule = () => {
         
         // 從 localStorage 移除
         removeActualTime(targetGroup.eventNo, targetGroup.heatNum);
+        
+        // 強制重新計算 processedGroups
+        setActualTimeVersion(v => v + 1);
       }
       return;
     }
@@ -667,6 +671,9 @@ const SwimmingSchedule = () => {
       
       // 同步寫入 localStorage
       saveActualTime(targetGroup.eventNo, targetGroup.heatNum, d);
+      
+      // 強制重新計算 processedGroups
+      setActualTimeVersion(v => v + 1);
     }
   };
 
@@ -679,6 +686,9 @@ const SwimmingSchedule = () => {
         return rest;
       });
       setGroups(newGroups);
+      
+      // 強制重新計算 processedGroups
+      setActualTimeVersion(v => v + 1);
       
       toast({
         title: "已清除實際時間",
