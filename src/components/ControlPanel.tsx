@@ -4,7 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScheduleConfig, FilterOptions } from '@/types/swimming';
-import { RotateCcw } from 'lucide-react';
+import { RotateCcw, Eraser } from 'lucide-react';
 
 interface ControlPanelProps {
   config: ScheduleConfig;
@@ -12,10 +12,12 @@ interface ControlPanelProps {
   ageGroups: string[];
   genders: string[];
   eventTypes: string[];
-  units: string[]; // 新增：參賽單位列表
-  players: string[]; // 新增：選手名單
+  units: string[]; // 新增:參賽單位列表
+  players: string[]; // 新增:選手名單
   onConfigChange: (config: ScheduleConfig) => void;
   onFilterChange: (filters: FilterOptions) => void;
+  onClearActualTimes?: () => void; // 新增:清除實際時間的回調
+  actualTimeCount?: number; // 新增:實際時間記錄數量
 }
 
 export const ControlPanel = ({
@@ -24,10 +26,12 @@ export const ControlPanel = ({
   ageGroups,
   genders,
   eventTypes,
-  units, // 新增：參賽單位列表
-  players, // 新增：選手名單
+  units, // 新增:參賽單位列表
+  players, // 新增:選手名單
   onConfigChange,
   onFilterChange,
+  onClearActualTimes, // 新增:清除實際時間
+  actualTimeCount = 0, // 新增:實際時間記錄數量
 }: ControlPanelProps) => {
   const resetFilters = () => {
     onFilterChange({
@@ -47,15 +51,29 @@ export const ControlPanel = ({
         <div className="flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold">賽程設定與篩選</h3>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={resetFilters}
-              className="flex items-center gap-2"
-            >
-              <RotateCcw className="w-4 h-4" />
-              重置篩選
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={resetFilters}
+                className="flex items-center gap-2"
+              >
+                <RotateCcw className="w-4 h-4" />
+                重置篩選
+              </Button>
+              {onClearActualTimes && actualTimeCount > 0 && (
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={onClearActualTimes}
+                  className="flex items-center gap-2"
+                  title="清除所有手動設定的實際結束時間"
+                >
+                  <Eraser className="w-4 h-4" />
+                  清除時間 ({actualTimeCount})
+                </Button>
+              )}
+            </div>
           </div>
           {/* 時間配置設定 */}
           <div className="grid grid-cols-2 gap-4 mb-4">
