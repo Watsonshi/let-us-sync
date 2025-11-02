@@ -664,10 +664,7 @@ const SwimmingSchedule = () => {
     }
 
     const base = new Date();
-    const Ls = parseTimeInputToDate(base, config.lunchStart);
-    const Le = parseTimeInputToDate(base, config.lunchEnd);
-    let d = parseTimeInputToDate(base, time);
-    d = moveOutOfLunch(d, Ls, Le);
+    const d = parseTimeInputToDate(base, time);
 
     const originalIndex = groups.findIndex(g => 
       g.eventNo === targetGroup.eventNo &&
