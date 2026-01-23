@@ -136,11 +136,17 @@ const SwimmingSchedule = () => {
           other.eventNo === g.eventNo && other.times && other.times.length > 0
         );
         if (sameEventGroups.length > 0) {
-          const maxTime = Math.max(...sameEventGroups.map(group => group.avgSeconds));
-          return { ...g, avgSeconds: maxTime };
-        } else {
-          return { ...g, avgSeconds: fallbackSeconds };
+          // 過濾掉 null/undefined/NaN 值，避免 Math.max 返回錯誤結果
+          const validTimes = sameEventGroups
+            .map(group => group.avgSeconds)
+            .filter(time => time != null && !isNaN(time) && time > 0);
+
+          if (validTimes.length > 0) {
+            const maxTime = Math.max(...validTimes);
+            return { ...g, avgSeconds: maxTime };
+          }
         }
+        return { ...g, avgSeconds: fallbackSeconds };
       }
       return g;
     });
@@ -163,12 +169,17 @@ const SwimmingSchedule = () => {
 
     let cursor: Date | null = null;
     let currentDay = '';
-    
+
     const allWithTimes = allSorted.map((g, i) => {
       if (g.dayLabel && g.dayLabel !== currentDay) {
         currentDay = g.dayLabel;
         const dayStartTime = getDayStartTime(g.dayKey);
         cursor = parseTimeInputToDate(base, dayStartTime);
+      }
+
+      // 確保 cursor 已初始化（防止第一筆資料沒有 dayLabel 的情況）
+      if (!cursor) {
+        cursor = parseTimeInputToDate(base, '08:15');
       }
 
       if (i > 0 && allSorted[i - 1].dayLabel === g.dayLabel) {
@@ -178,7 +189,7 @@ const SwimmingSchedule = () => {
         }
       }
 
-      const estStart = new Date(cursor!);
+      const estStart = new Date(cursor);
       const estEnd = addSeconds(estStart, g.avgSeconds);
 
       const updatedGroup = {
