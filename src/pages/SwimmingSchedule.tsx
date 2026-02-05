@@ -634,24 +634,26 @@ const SwimmingSchedule = () => {
     try {
       setIsLoading(true);
       
-      // 從資料庫載入賽程資料
-      const newGroups = await loadScheduleFromDatabase();
+      // 從 public/比賽成績.xlsx 載入賽程資料
+      const response = await fetch('/比賽成績.xlsx');
+      if (!response.ok) {
+        throw new Error('無法載入預設賽程檔案');
+      }
+      const blob = await response.blob();
+      const file = new File([blob], '比賽成績.xlsx', { type: blob.type });
+      
+      const fallback = parseMmSs(config.fallback) ?? 360;
+      const newGroups = await parseExcelFile(file, fallback);
       setGroups(newGroups);
       
       const maxEventNo = Math.max(...newGroups.map(g => g.eventNo));
       
       toast({
         title: "預設賽程載入成功",
-        description: `成功從資料庫載入 ${newGroups.length} 組比賽資料（項次 1-${maxEventNo}）`,
+        description: `成功載入 ${newGroups.length} 組比賽資料（項次 1-${maxEventNo}）`,
       });
     } catch (error) {
-      let errorMsg = `載入預設賽程失敗：${error instanceof Error ? error.message : '未知錯誤'}`;
-      
-      if (error instanceof Error) {
-        if (error.message.includes('資料庫中沒有賽程資料')) {
-          errorMsg += '\n\n資料庫目前是空的，請先上傳 Excel 檔案來建立資料';
-        }
-      }
+      const errorMsg = `載入預設賽程失敗：${error instanceof Error ? error.message : '未知錯誤'}`;
       
       toast({
         title: "載入失敗",
