@@ -12,6 +12,7 @@ import { parseMmSs, parseTimeInputToDate, addSeconds } from '@/utils/timeUtils';
 import { parsePlayerCSV, getUniquePlayersFromCSV } from '@/utils/csvUtils';
 import { saveActualTime, removeActualTime, loadActualTime, clearAllActualTimes, getActualTimeCount } from '@/utils/actualTimeStorage';
 import { Waves, Timer, LogOut } from 'lucide-react';
+import HeroBanner from '@/components/HeroBanner';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -834,24 +835,20 @@ const SwimmingSchedule = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+      {/* Hero Banner */}
+      <HeroBanner 
+        title="游泳比賽動態時間表" 
+        subtitle="即時動態追蹤 / 天數分組管理 / 智慧賽程安排"
+      />
+      
       <div className="max-w-7xl mx-auto p-4 space-y-6">
-        {/* Header */}
-        <header className="flex flex-col sm:flex-row sm:items-end gap-4 sm:gap-6">
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-gradient-primary rounded-2xl shadow-custom-glow">
-              <Waves className="w-8 h-8 text-primary-foreground" />
-            </div>
-            <div>
-              <h1 className="text-3xl sm:text-4xl font-bold text-primary">
-                游泳比賽動態時間表
-              </h1>
-              <p className="text-muted-foreground flex items-center gap-2 mt-1">
-                <Timer className="w-4 h-4" />
-                即時動態 / 天數分組
-              </p>
-            </div>
+        {/* User Controls Bar */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-2">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Timer className="w-4 h-4" />
+            <span>即時動態 / 天數分組</span>
           </div>
-          <div className="sm:ml-auto flex items-center gap-4">
+          <div className="flex items-center gap-4">
             {user && (
               <div className="flex items-center gap-3">
                 <span className="text-sm text-muted-foreground">
@@ -886,7 +883,7 @@ const SwimmingSchedule = () => {
             )}
             <CurrentTime />
           </div>
-        </header>
+        </div>
 
         {/* Control Panel */}
         <ControlPanel
