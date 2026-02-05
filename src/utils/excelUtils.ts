@@ -7,9 +7,9 @@ import { isNewFormatExcel, parseNewFormatExcel } from './newFormatParser';
 const REQUIRED_HEADERS = ['項次', '組次', '年齡組', '性別', '比賽項目', '姓名', '單位', '報名成績'];
 
 const DAY_RULES = [
-  { key: 'd1', label: '第一天（115/2/6，四）', start: 1, end: 54 },
-  { key: 'd2', label: '第二天（115/2/7，五）', start: 55, end: 116 },
-  { key: 'd3', label: '第三天（115/2/8，六）', start: 117, end: 176 },
+  { key: 'd1', label: '第一天（115/2/6，五）', start: 1, end: 54 },
+  { key: 'd2', label: '第二天（115/2/7，六）', start: 55, end: 116 },
+  { key: 'd3', label: '第三天（115/2/8，日）', start: 117, end: 176 },
 ];
 
 export const dayKeyOfEvent = (ev: number): string => {
