@@ -664,15 +664,42 @@ const SwimmingSchedule = () => {
       setIsLoading(true);
       
       // 從 public/比賽成績.xlsx 載入賽程資料
-      // 使用 import.meta.env.BASE_URL 確保在不同部署環境都能正確載入
+      // 注意：不同部署環境的 base path 可能不同，因此這裡同時嘗試 BASE_URL 與根目錄兩種路徑
       const baseUrl = import.meta.env.BASE_URL || '/';
-      const response = await fetch(`${baseUrl}比賽成績.xlsx`);
-      if (!response.ok) {
-        throw new Error(`無法載入預設賽程檔案 (HTTP ${response.status})`);
+      const candidateUrls = Array.from(
+        new Set([`${baseUrl}比賽成績.xlsx`, `/比賽成績.xlsx`])
+      );
+
+      let blob: Blob | null = null;
+      let usedUrl = '';
+      let lastError: Error | null = null;
+
+      for (const url of candidateUrls) {
+        try {
+          console.log('[default-schedule] fetching:', url);
+          const res = await fetch(url);
+          if (res.ok) {
+            blob = await res.blob();
+            usedUrl = url;
+            break;
+          }
+          lastError = new Error(`無法載入預設賽程檔案：${url} (HTTP ${res.status})`);
+        } catch (e) {
+          lastError = new Error(
+            `無法載入預設賽程檔案：${url} (${e instanceof Error ? e.message : '未知錯誤'})`,
+          );
+        }
       }
-      const blob = await response.blob();
-      const file = new File([blob], '比賽成績.xlsx', { type: blob.type });
-      
+
+      if (!blob) {
+        throw lastError ?? new Error('無法載入預設賽程檔案：未知錯誤');
+      }
+
+      const file = new File([blob], '比賽成績.xlsx', {
+        type:
+          blob.type ||
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      });
       const fallback = parseMmSs(config.fallback) ?? 360;
       const newGroups = await parseExcelFile(file, fallback);
       setGroups(newGroups);
@@ -681,7 +708,7 @@ const SwimmingSchedule = () => {
       
       toast({
         title: "預設賽程載入成功",
-        description: `成功載入 ${newGroups.length} 組比賽資料（項次 1-${maxEventNo}）`,
+        description: `成功載入 ${newGroups.length} 組比賽資料（項次 1-${maxEventNo}）。來源：${usedUrl}`,
       });
     } catch (error) {
       const errorMsg = `載入預設賽程失敗：${error instanceof Error ? error.message : '未知錯誤'}`;
