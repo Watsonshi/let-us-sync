@@ -37,12 +37,43 @@ const SwimmingSchedule = () => {
   });
   const [actualTimeVersion, setActualTimeVersion] = useState(0);
 
-  // 自動載入資料
+  // 自動載入預設賽程（從 default-schedule.xlsx）
   useEffect(() => {
-    const loadData = async () => {
+    const loadDefaultSchedule = async () => {
       try {
         setIsLoading(true);
-        const newGroups = await loadScheduleFromDatabase();
+        
+        const baseUrl = import.meta.env.BASE_URL || '/';
+        const candidateUrls = [
+          `${baseUrl}default-schedule.xlsx`,
+          `/default-schedule.xlsx`,
+        ];
+
+        let blob: Blob | null = null;
+        for (const url of candidateUrls) {
+          try {
+            const res = await fetch(url);
+            if (res.ok) {
+              blob = await res.blob();
+              break;
+            }
+          } catch {
+            // 繼續嘗試下一個 URL
+          }
+        }
+
+        if (!blob) {
+          console.warn('無法載入預設賽程檔案');
+          return;
+        }
+
+        const file = new File([blob], 'default-schedule.xlsx', {
+          type: blob.type || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        });
+
+        const fallback = parseMmSs(config.fallback) ?? 360;
+        const newGroups = await parseExcelFile(file, fallback);
+        
         if (newGroups.length > 0) {
           setGroups(newGroups);
           
@@ -53,13 +84,13 @@ const SwimmingSchedule = () => {
           }
         }
       } catch (error) {
-        // 初次載入失敗不顯示錯誤訊息，讓使用者可以手動上傳
+        console.error('自動載入預設賽程失敗:', error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    loadData();
+    loadDefaultSchedule();
   }, []);
 
   // 計算篩選選項
