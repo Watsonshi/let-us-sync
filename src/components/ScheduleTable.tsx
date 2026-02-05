@@ -136,7 +136,7 @@ export const ScheduleTable = ({ groups, onActualEndChange }: ScheduleTableProps)
 
                 {/* Times section - 2x2 grid for better mobile layout */}
                 <div className="grid grid-cols-2 gap-3 text-sm border-t pt-3">
-                  <div className="text-center">
+                  <div className="text-center min-w-0">
                     <div className="flex items-center justify-center gap-1 text-muted-foreground mb-1">
                       <Clock className="w-3 h-3" />
                       <span className="text-xs">預估開始</span>
@@ -146,7 +146,7 @@ export const ScheduleTable = ({ groups, onActualEndChange }: ScheduleTableProps)
                     </div>
                   </div>
                   
-                  <div className="text-center">
+                  <div className="text-center min-w-0">
                     <div className="flex items-center justify-center gap-1 text-muted-foreground mb-1">
                       <Timer className="w-3 h-3" />
                       <span className="text-xs">預估結束</span>
@@ -156,16 +156,17 @@ export const ScheduleTable = ({ groups, onActualEndChange }: ScheduleTableProps)
                     </div>
                   </div>
 
-                  <div className="text-center">
+                  <div className="text-center min-w-0">
                     <div className="text-xs text-muted-foreground mb-1">預估完賽</div>
                     <div className="font-mono text-info font-medium">{mmss(group.avgSeconds)}</div>
                   </div>
 
-                  <div className="text-center">
+                  {/* iOS 的 time input 會有較大的內建最小寬度：改成跨兩欄整行，避免撐破卡片 */}
+                  <div className="text-center col-span-2 min-w-0">
                     <div className="text-xs text-muted-foreground mb-1">實際結束</div>
                     <Input
                       type="time"
-                      className="h-8 text-xs text-center px-2"
+                      className="w-full max-w-full min-w-0 h-9 text-sm text-center px-2"
                       value={group.actualEnd ? fmtHM(group.actualEnd) : ''}
                       onChange={(e) => onActualEndChange(originalIndex, e.target.value)}
                     />
