@@ -161,12 +161,12 @@ export const ScheduleTable = ({ groups, onActualEndChange }: ScheduleTableProps)
                     <div className="font-mono text-info font-medium">{mmss(group.avgSeconds)}</div>
                   </div>
 
-                  {/* iOS 的 time input 會有較大的內建最小寬度：改成跨兩欄整行，避免撐破卡片 */}
-                  <div className="text-center col-span-2 min-w-0">
+                  {/* iOS 的 time input 會有較大的內建最小寬度：改成跨兩欄整行並置中，避免撐破卡片 */}
+                  <div className="text-center col-span-2 min-w-0 flex flex-col items-center">
                     <div className="text-xs text-muted-foreground mb-1">實際結束</div>
                     <Input
                       type="time"
-                      className="w-full max-w-full min-w-0 h-9 text-sm text-center px-2"
+                      className="max-w-[180px] w-full min-w-0 h-9 text-sm text-center px-2"
                       value={group.actualEnd ? fmtHM(group.actualEnd) : ''}
                       onChange={(e) => onActualEndChange(originalIndex, e.target.value)}
                     />
