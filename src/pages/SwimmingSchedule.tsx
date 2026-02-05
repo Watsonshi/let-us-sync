@@ -664,9 +664,11 @@ const SwimmingSchedule = () => {
       setIsLoading(true);
       
       // 從 public/比賽成績.xlsx 載入賽程資料
-      const response = await fetch('/比賽成績.xlsx');
+      // 使用 import.meta.env.BASE_URL 確保在不同部署環境都能正確載入
+      const baseUrl = import.meta.env.BASE_URL || '/';
+      const response = await fetch(`${baseUrl}比賽成績.xlsx`);
       if (!response.ok) {
-        throw new Error('無法載入預設賽程檔案');
+        throw new Error(`無法載入預設賽程檔案 (HTTP ${response.status})`);
       }
       const blob = await response.blob();
       const file = new File([blob], '比賽成績.xlsx', { type: blob.type });
