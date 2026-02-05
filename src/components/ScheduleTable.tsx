@@ -134,8 +134,8 @@ export const ScheduleTable = ({ groups, onActualEndChange }: ScheduleTableProps)
                   <span className="font-medium ml-2">{group.eventType || '-'}</span>
                 </div>
 
-                {/* Times section */}
-                <div className="grid grid-cols-3 gap-3 text-sm border-t pt-3">
+                {/* Times section - 2x2 grid for better mobile layout */}
+                <div className="grid grid-cols-2 gap-3 text-sm border-t pt-3">
                   <div className="text-center">
                     <div className="flex items-center justify-center gap-1 text-muted-foreground mb-1">
                       <Clock className="w-3 h-3" />
@@ -157,20 +157,19 @@ export const ScheduleTable = ({ groups, onActualEndChange }: ScheduleTableProps)
                   </div>
 
                   <div className="text-center">
+                    <div className="text-xs text-muted-foreground mb-1">預估完賽</div>
+                    <div className="font-mono text-info font-medium">{mmss(group.avgSeconds)}</div>
+                  </div>
+
+                  <div className="text-center">
                     <div className="text-xs text-muted-foreground mb-1">實際結束</div>
                     <Input
                       type="time"
-                      className="w-full h-8 text-xs text-center"
+                      className="h-8 text-xs text-center px-2"
                       value={group.actualEnd ? fmtHM(group.actualEnd) : ''}
                       onChange={(e) => onActualEndChange(originalIndex, e.target.value)}
                     />
                   </div>
-                </div>
-
-                {/* Average time */}
-                <div className="flex items-center justify-center gap-2 text-sm border-t pt-3">
-                  <span className="text-muted-foreground">預估完賽時間:</span>
-                  <span className="font-mono text-info font-medium">{mmss(group.avgSeconds)}</span>
                 </div>
               </CardContent>
             </Card>
