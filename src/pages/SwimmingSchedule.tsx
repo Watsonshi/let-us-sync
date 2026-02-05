@@ -666,8 +666,14 @@ const SwimmingSchedule = () => {
       // 從 public/比賽成績.xlsx 載入賽程資料
       // 注意：不同部署環境的 base path 可能不同，因此這裡同時嘗試 BASE_URL 與根目錄兩種路徑
       const baseUrl = import.meta.env.BASE_URL || '/';
+      // 正式發布環境可能無法穩定提供「中文檔名」靜態資源，因此優先使用 ASCII 檔名
       const candidateUrls = Array.from(
-        new Set([`${baseUrl}比賽成績.xlsx`, `/比賽成績.xlsx`])
+        new Set([
+          `${baseUrl}default-schedule.xlsx`,
+          `/default-schedule.xlsx`,
+          `${baseUrl}比賽成績.xlsx`,
+          `/比賽成績.xlsx`,
+        ]),
       );
 
       let blob: Blob | null = null;
