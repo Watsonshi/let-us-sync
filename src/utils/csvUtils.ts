@@ -69,7 +69,7 @@ export const parsePlayerCSV = (csvContent: string): PlayerData[] => {
           });
         }
       } catch (error) {
-        console.warn('解析CSV行失敗:', line, error);
+        console.warn('解析CSV行失敗:', columns, error);
       }
     }
   }

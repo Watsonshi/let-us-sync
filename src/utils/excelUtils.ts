@@ -1,13 +1,15 @@
 import * as XLSX from 'xlsx';
 import { SwimGroup } from '@/types/swimming';
 import { parseMmSs } from './timeUtils';
+import { isNewFormatExcel, parseNewFormatExcel } from './newFormatParser';
 
+// 舊格式需要的標題欄位
 const REQUIRED_HEADERS = ['項次', '組次', '年齡組', '性別', '比賽項目', '姓名', '單位', '報名成績'];
 
 const DAY_RULES = [
   { key: 'd1', label: '第一天（114/10/31，五）', start: 1, end: 85 },
   { key: 'd2', label: '第二天（114/11/1，六）', start: 86, end: 90 },
-  { key: 'd3', label: '第三天（114/11/2，日）', start: 91, end: 136 },
+  { key: 'd3', label: '第三天（114/11/2，日）', start: 91, end: 173 }, // 更新: 擴展到 173 項次
 ];
 
 export const dayKeyOfEvent = (ev: number): string => {
@@ -185,6 +187,18 @@ export const parseExcelFile = async (file: File, fallback: number): Promise<Swim
     const ws = wb.Sheets[sheetName];
     console.log('使用工作表:', sheetName);
     
+    // 轉換為 2D 陣列以檢測格式
+    const rows2D = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' }) as any[][];
+    console.log('2D陣列前5行:', rows2D.slice(0, 5));
+    
+    // 檢查是否為新格式
+    if (isNewFormatExcel(rows2D)) {
+      console.log('偵測到新格式 Excel，使用新格式解析器');
+      return parseNewFormatExcel(file, fallback);
+    }
+    
+    console.log('使用舊格式解析器');
+    
     // 先嘗試直接解析
     let rows = XLSX.utils.sheet_to_json(ws, { defval: '' }) as Record<string, any>[];
     console.log('直接解析結果，前5行:', rows.slice(0, 5));
@@ -197,9 +211,6 @@ export const parseExcelFile = async (file: File, fallback: number): Promise<Swim
     
     // 如果直接解析失敗，使用2D陣列方式
     console.log('直接解析失敗，嘗試2D陣列解析');
-    const rows2D = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' }) as any[][];
-    console.log('2D陣列前10行:', rows2D.slice(0, 10));
-    
     rows = rows2DToObjects(rows2D);
     return buildGroupsFromRows(rows, fallback);
     
