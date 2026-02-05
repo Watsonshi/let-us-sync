@@ -135,10 +135,14 @@ export const parseNewFormatExcel = async (file: File, fallback: number): Promise
     
     const { ageGroup, gender } = splitAgeGenderGroup(groupCategory);
     
-    // 解析報名成績（處理 99:99.99 等無效值）
+    // 解析報名成績（處理 99:99.99、40:39.99 等無效值）
     let timeSec: number | null = null;
-    if (timeStr && !timeStr.includes('99:99')) {
-      timeSec = parseMmSs(timeStr);
+    if (timeStr && !timeStr.includes('99:99') && !timeStr.includes('40:39')) {
+      const parsed = parseMmSs(timeStr);
+      // 過濾掉超過 30 分鐘的異常成績（1800 秒）
+      if (parsed !== null && parsed <= 1800) {
+        timeSec = parsed;
+      }
     }
     
     allPlayers.push({
