@@ -167,6 +167,32 @@ const SwimmingSchedule = () => {
       }
     };
 
+    // 午休時間設定：12:00 - 13:00
+    const LUNCH_START_HOUR = 12;
+    const LUNCH_START_MIN = 0;
+    const LUNCH_END_HOUR = 13;
+    const LUNCH_END_MIN = 0;
+
+    // 檢查時間是否在午休時段內
+    const isInLunchBreak = (date: Date): boolean => {
+      const hours = date.getHours();
+      const minutes = date.getMinutes();
+      const timeInMinutes = hours * 60 + minutes;
+      const lunchStart = LUNCH_START_HOUR * 60 + LUNCH_START_MIN;
+      const lunchEnd = LUNCH_END_HOUR * 60 + LUNCH_END_MIN;
+      return timeInMinutes >= lunchStart && timeInMinutes < lunchEnd;
+    };
+
+    // 如果時間落在午休時段，跳到午休結束
+    const skipLunchIfNeeded = (date: Date): Date => {
+      if (isInLunchBreak(date)) {
+        const newDate = new Date(date);
+        newDate.setHours(LUNCH_END_HOUR, LUNCH_END_MIN, 0, 0);
+        return newDate;
+      }
+      return date;
+    };
+
     let cursor: Date | null = null;
     let currentDay = '';
 
@@ -188,6 +214,9 @@ const SwimmingSchedule = () => {
           cursor = addSeconds(prev.actualEnd, config.turnover);
         }
       }
+
+      // 跳過午休時段
+      cursor = skipLunchIfNeeded(cursor);
 
       const estStart = new Date(cursor);
       const estEnd = addSeconds(estStart, g.avgSeconds);
