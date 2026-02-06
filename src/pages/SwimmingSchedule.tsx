@@ -10,16 +10,26 @@ import { SwimGroup, ScheduleConfig, FilterOptions, PlayerData } from '@/types/sw
 import { parseExcelFile, buildGroupsFromRows, dayKeyOfEvent, dayLabelOfKey } from '@/utils/excelUtils';
 import { parseMmSs, parseTimeInputToDate, addSeconds } from '@/utils/timeUtils';
 import { parsePlayerCSV, getUniquePlayersFromCSV } from '@/utils/csvUtils';
-import { saveActualTime, removeActualTime, loadActualTime, clearAllActualTimes, getActualTimeCount } from '@/utils/actualTimeStorage';
 import { Waves, Timer, LogOut } from 'lucide-react';
 import HeroBanner from '@/components/HeroBanner';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useActualTimeSync } from '@/hooks/useActualTimeSync';
 
 const SwimmingSchedule = () => {
   const navigate = useNavigate();
   const { user, isAdmin, loading: authLoading, signOut } = useAuth();
+  const { 
+    actualTimes, 
+    isLoading: actualTimesLoading, 
+    actualTimeCount, 
+    saveActualTime, 
+    removeActualTime, 
+    clearAllActualTimes: clearAllActualTimesDb,
+    getActualTime 
+  } = useActualTimeSync();
+  
   const [groups, setGroups] = useState<SwimGroup[]>([]);
   const [players, setPlayers] = useState<PlayerData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -36,7 +46,6 @@ const SwimmingSchedule = () => {
     playerSelect: 'all',
     playerSearch: '', // 選手名稱搜尋
   });
-  const [actualTimeVersion, setActualTimeVersion] = useState(0);
 
   // 自動載入預設賽程（從 default-schedule.xlsx）
   useEffect(() => {
@@ -153,18 +162,24 @@ const SwimmingSchedule = () => {
     };
   }, [groups, players, filters.unitSelect]);
 
-  // 應用篩選和計算時間
+  // 應用篩選和計算時間（結合 Realtime 同步的 actualTimes）
   const processedGroups = useMemo(() => {
     // 如果沒有載入資料或沒有選擇天數，返回空陣列
     if (!groups.length || !filters.daySelect) return [];
 
     const base = new Date();
     const fallbackSeconds = parseMmSs(config.fallback) ?? 360;
+    
+    // 將資料庫的 actualTimes 合併到 groups
+    const groupsWithDbActualTimes = groups.map(g => {
+      const dbActualTime = getActualTime(g.eventNo, g.heatNum);
+      return dbActualTime ? { ...g, actualEnd: dbActualTime } : g;
+    });
 
     // 更新平均時間
-    const updatedGroups = groups.map(g => {
+    const updatedGroups = groupsWithDbActualTimes.map(g => {
       if (!g.times || g.times.length === 0) {
-        const sameEventGroups = groups.filter(other =>
+        const sameEventGroups = groupsWithDbActualTimes.filter(other =>
           other.eventNo === g.eventNo && other.times && other.times.length > 0
         );
         if (sameEventGroups.length > 0) {
@@ -387,7 +402,7 @@ const SwimmingSchedule = () => {
     }
     
     return filtered;
-  }, [groups, config, filters, actualTimeVersion]);
+  }, [groups, config, filters, actualTimes, getActualTime]);
 
   // 計算當前比賽組別和準備檢錄組別
   const { currentGroup, inspectionGroup } = useMemo(() => {
@@ -651,13 +666,8 @@ const SwimmingSchedule = () => {
 
       const sortedGroups = groups.sort((a, b) => a.eventNo - b.eventNo || a.heatNum - b.heatNum);
       
-      // 從 localStorage 載入實際結束時間並合併到 groups
-      const groupsWithActualTimes = sortedGroups.map(group => {
-        const actualEnd = loadActualTime(group.eventNo, group.heatNum);
-        return actualEnd ? { ...group, actualEnd } : group;
-      });
-      
-      return groupsWithActualTimes;
+      // 不再從 localStorage 載入，由 useActualTimeSync 處理
+      return sortedGroups;
     } catch (error) {
       throw error;
     }
@@ -761,28 +771,29 @@ const SwimmingSchedule = () => {
     }
   };
 
-  const handleActualEndChange = (groupIndex: number, time: string) => {
+  const handleActualEndChange = async (groupIndex: number, time: string) => {
+    // 非管理員不能修改
+    if (!isAdmin) {
+      toast({
+        title: "權限不足",
+        description: "只有管理員可以修改實際結束時間",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     const targetGroup = processedGroups[groupIndex];
     if (!targetGroup) return;
 
     if (!time) {
       // 清除實際結束時間
-      const originalIndex = groups.findIndex(g => 
-        g.eventNo === targetGroup.eventNo &&
-        g.heatNum === targetGroup.heatNum &&
-        g.heatTotal === targetGroup.heatTotal
-      );
-      
-      if (originalIndex !== -1) {
-        const newGroups = [...groups];
-        delete newGroups[originalIndex].actualEnd;
-        setGroups(newGroups);
-        
-        // 從 localStorage 移除
-        removeActualTime(targetGroup.eventNo, targetGroup.heatNum);
-        
-        // 強制重新計算 processedGroups
-        setActualTimeVersion(v => v + 1);
+      const success = await removeActualTime(targetGroup.eventNo, targetGroup.heatNum);
+      if (!success) {
+        toast({
+          title: "刪除失敗",
+          description: "無法刪除實際結束時間",
+          variant: "destructive",
+        });
       }
       return;
     }
@@ -790,46 +801,45 @@ const SwimmingSchedule = () => {
     const base = new Date();
     const d = parseTimeInputToDate(base, time);
 
-    const originalIndex = groups.findIndex(g => 
-      g.eventNo === targetGroup.eventNo &&
-      g.heatNum === targetGroup.heatNum &&
-      g.heatTotal === targetGroup.heatTotal
-    );
+    console.log('=== 更新實際結束時間 ===');
+    console.log(`項次 ${targetGroup.eventNo} 組次 ${targetGroup.heatNum}`);
+    console.log('新的實際結束時間:', d.toLocaleTimeString());
     
-    if (originalIndex !== -1) {
-      const newGroups = [...groups];
-      newGroups[originalIndex].actualEnd = d;
-      setGroups(newGroups);
-      
-      console.log('=== 更新實際結束時間 ===');
-      console.log(`項次 ${targetGroup.eventNo} 組次 ${targetGroup.heatNum}`);
-      console.log('新的實際結束時間:', d.toLocaleTimeString());
-      
-      // 同步寫入 localStorage
-      saveActualTime(targetGroup.eventNo, targetGroup.heatNum, d);
-      
-      // 強制重新計算 processedGroups
-      setActualTimeVersion(v => v + 1);
+    // 同步寫入資料庫
+    const success = await saveActualTime(targetGroup.eventNo, targetGroup.heatNum, d);
+    if (!success) {
+      toast({
+        title: "儲存失敗",
+        description: "無法儲存實際結束時間，請確認您有管理員權限",
+        variant: "destructive",
+      });
     }
   };
 
-  const handleClearActualTimes = () => {
-    if (window.confirm('確定要清除所有手動設定的實際結束時間嗎？')) {
-      clearAllActualTimes();
-      // 清除當前 groups 中的所有 actualEnd
-      const newGroups = groups.map(g => {
-        const { actualEnd, ...rest } = g;
-        return rest;
-      });
-      setGroups(newGroups);
-      
-      // 強制重新計算 processedGroups
-      setActualTimeVersion(v => v + 1);
-      
+  const handleClearActualTimes = async () => {
+    if (!isAdmin) {
       toast({
-        title: "已清除實際時間",
-        description: "所有手動設定的實際結束時間已清除",
+        title: "權限不足",
+        description: "只有管理員可以清除實際結束時間",
+        variant: "destructive",
       });
+      return;
+    }
+    
+    if (window.confirm('確定要清除所有手動設定的實際結束時間嗎？')) {
+      const success = await clearAllActualTimesDb();
+      if (success) {
+        toast({
+          title: "已清除實際時間",
+          description: "所有手動設定的實際結束時間已清除",
+        });
+      } else {
+        toast({
+          title: "清除失敗",
+          description: "無法清除實際結束時間",
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -897,7 +907,7 @@ const SwimmingSchedule = () => {
           onConfigChange={setConfig}
           onFilterChange={setFilters}
           onClearActualTimes={handleClearActualTimes}
-          actualTimeCount={getActualTimeCount()}
+          actualTimeCount={actualTimeCount}
         />
 
         {/* File Upload */}

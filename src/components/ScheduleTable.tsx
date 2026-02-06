@@ -4,8 +4,9 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { SwimGroup } from '@/types/swimming';
 import { fmtHM, mmss } from '@/utils/timeUtils';
-import { Clock, Trophy, Users, Target, Hash, Timer, ChevronUp } from 'lucide-react';
+import { Clock, Trophy, Users, Target, Hash, Timer, ChevronUp, Lock } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useAuth } from '@/hooks/useAuth';
 
 interface ScheduleTableProps {
   groups: SwimGroup[];
@@ -16,6 +17,7 @@ export const ScheduleTable = ({ groups, onActualEndChange }: ScheduleTableProps)
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showBackToTop, setShowBackToTop] = useState(false);
   const isMobile = useIsMobile();
+  const { isAdmin } = useAuth();
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -163,13 +165,22 @@ export const ScheduleTable = ({ groups, onActualEndChange }: ScheduleTableProps)
 
                   {/* iOS 的 time input 會有較大的內建最小寬度：改成跨兩欄整行並置中，避免撐破卡片 */}
                   <div className="text-center col-span-2 min-w-0 flex flex-col items-center">
-                    <div className="text-xs text-muted-foreground mb-1">實際結束</div>
-                    <Input
-                      type="time"
-                      className="max-w-[180px] w-full min-w-0 h-9 text-sm text-center px-2"
-                      value={group.actualEnd ? fmtHM(group.actualEnd) : ''}
-                      onChange={(e) => onActualEndChange(originalIndex, e.target.value)}
-                    />
+                    <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
+                      實際結束
+                      {!isAdmin && <Lock className="w-3 h-3" />}
+                    </div>
+                    {isAdmin ? (
+                      <Input
+                        type="time"
+                        className="max-w-[180px] w-full min-w-0 h-9 text-sm text-center px-2"
+                        value={group.actualEnd ? fmtHM(group.actualEnd) : ''}
+                        onChange={(e) => onActualEndChange(originalIndex, e.target.value)}
+                      />
+                    ) : (
+                      <div className="font-mono text-sm h-9 flex items-center justify-center text-muted-foreground">
+                        {group.actualEnd ? fmtHM(group.actualEnd) : '-'}
+                      </div>
+                    )}
                   </div>
                 </div>
               </CardContent>
@@ -230,7 +241,12 @@ export const ScheduleTable = ({ groups, onActualEndChange }: ScheduleTableProps)
                       </div>
                     </td>
                     <td className="px-4 py-2 border-r border-border">預估結束</td>
-                    <td className="px-4 py-2">實際結束</td>
+                    <td className="px-4 py-2">
+                      <div className="flex items-center gap-1">
+                        實際結束
+                        {!isAdmin && <Lock className="w-3 h-3" />}
+                      </div>
+                    </td>
                   </tr>
                 );
               }
@@ -275,12 +291,18 @@ export const ScheduleTable = ({ groups, onActualEndChange }: ScheduleTableProps)
                       {group.scheduledEnd ? fmtHM(group.scheduledEnd) : '-'}
                     </td>
                     <td className="px-4 py-3">
-                      <Input
-                        type="time"
-                        className="w-28 h-8 text-sm"
-                        value={group.actualEnd ? fmtHM(group.actualEnd) : ''}
-                        onChange={(e) => onActualEndChange(index, e.target.value)}
-                      />
+                      {isAdmin ? (
+                        <Input
+                          type="time"
+                          className="w-28 h-8 text-sm"
+                          value={group.actualEnd ? fmtHM(group.actualEnd) : ''}
+                          onChange={(e) => onActualEndChange(index, e.target.value)}
+                        />
+                      ) : (
+                        <span className="font-mono text-muted-foreground">
+                          {group.actualEnd ? fmtHM(group.actualEnd) : '-'}
+                        </span>
+                      )}
                     </td>
                   </tr>
                 );
