@@ -30,31 +30,6 @@ const SwimmingSchedule = () => {
     getActualTime 
   } = useActualTimeSync();
 
-  // 外部比賽資訊同步
-  const handleEventChange = useCallback((previousEventNo: number, newEventNo: number) => {
-    console.log(`項次變更: ${previousEventNo} -> ${newEventNo}`);
-    toast({
-      title: "比賽進度更新",
-      description: `目前比賽項次已從 ${previousEventNo} 進入 ${newEventNo}`,
-    });
-  }, []);
-
-  const {
-    syncStatus,
-    isLoading: syncLoading,
-    isSyncing,
-    error: syncError,
-    lastScrapeResult,
-    triggerSync,
-    startPolling,
-    stopPolling,
-    isPolling,
-  } = useRaceSyncStatus({
-    autoPolling: false, // 預設不自動輪詢，讓管理員手動控制
-    pollingInterval: 10000, // 10 秒
-    onEventChange: handleEventChange,
-  });
-  
   const [groups, setGroups] = useState<SwimGroup[]>([]);
   const [players, setPlayers] = useState<PlayerData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -70,6 +45,63 @@ const SwimmingSchedule = () => {
     unitSelect: 'all', // 新增：參賽單位篩選
     playerSelect: 'all',
     playerSearch: '', // 選手名稱搜尋
+  });
+
+  // 外部比賽資訊同步 - 當項次變更時自動更新 actualEnd
+  const handleEventChange = useCallback(async (previousEventNo: number, newEventNo: number) => {
+    console.log(`項次變更: ${previousEventNo} -> ${newEventNo}`);
+    
+    // 當項次變更時，自動為前一個項次的所有組別設定 actualEnd
+    if (previousEventNo > 0 && isAdmin) {
+      const now = new Date();
+      
+      // 找到前一個項次的所有組別
+      const previousEventGroups = groups.filter(g => g.eventNo === previousEventNo);
+      
+      if (previousEventGroups.length > 0) {
+        console.log(`自動為項次 ${previousEventNo} 的 ${previousEventGroups.length} 個組別設定 actualEnd`);
+        
+        // 為每個組別設定 actualEnd（使用當前時間）
+        for (const group of previousEventGroups) {
+          // 檢查是否已有 actualEnd
+          const existingActualTime = getActualTime(group.eventNo, group.heatNum);
+          if (!existingActualTime) {
+            await saveActualTime(group.eventNo, group.heatNum, now);
+          }
+        }
+        
+        toast({
+          title: "比賽進度更新",
+          description: `項次 ${previousEventNo} 已自動標記完成，目前進入項次 ${newEventNo}`,
+        });
+      } else {
+        toast({
+          title: "比賽進度更新",
+          description: `目前比賽項次已從 ${previousEventNo} 進入 ${newEventNo}`,
+        });
+      }
+    } else {
+      toast({
+        title: "比賽進度更新",
+        description: `目前比賽項次已從 ${previousEventNo} 進入 ${newEventNo}`,
+      });
+    }
+  }, [groups, isAdmin, saveActualTime, getActualTime]);
+
+  const {
+    syncStatus,
+    isLoading: syncLoading,
+    isSyncing,
+    error: syncError,
+    lastScrapeResult,
+    triggerSync,
+    startPolling,
+    stopPolling,
+    isPolling,
+  } = useRaceSyncStatus({
+    autoPolling: false, // 預設不自動輪詢，讓管理員手動控制
+    pollingInterval: 10000, // 10 秒
+    onEventChange: handleEventChange,
   });
 
   // 自動載入預設賽程（從 default-schedule.xlsx）
