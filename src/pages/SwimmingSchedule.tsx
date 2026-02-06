@@ -1038,6 +1038,7 @@ const SwimmingSchedule = () => {
           <ScheduleTable
               groups={processedGroups}
               onActualEndChange={handleActualEndChange}
+              syncCurrentEventNo={syncStatus?.current_event_no}
             />
         ) : groups.length > 0 && !filters.daySelect ? (
           <div className="text-center py-12">

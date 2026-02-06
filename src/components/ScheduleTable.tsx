@@ -11,9 +11,11 @@ import { useAuth } from '@/hooks/useAuth';
 interface ScheduleTableProps {
   groups: SwimGroup[];
   onActualEndChange: (groupIndex: number, time: string) => void;
+  /** 外部同步的當前比賽項次（優先使用此值來判斷高亮） */
+  syncCurrentEventNo?: number | null;
 }
 
-export const ScheduleTable = ({ groups, onActualEndChange }: ScheduleTableProps) => {
+export const ScheduleTable = ({ groups, onActualEndChange, syncCurrentEventNo }: ScheduleTableProps) => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showBackToTop, setShowBackToTop] = useState(false);
   const isMobile = useIsMobile();
@@ -40,9 +42,19 @@ export const ScheduleTable = ({ groups, onActualEndChange }: ScheduleTableProps)
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // 找到當前比賽的 index：最後一個有 actualEnd 的項次之後的那一個
+  // 找到當前比賽的 index
+  // 優先使用外部同步的 syncCurrentEventNo，否則使用 actualEnd 或時間判斷
   const getCurrentEventIndex = (): number => {
-    // 找到最後一個有 actualEnd 的項次
+    // 1. 優先使用外部同步的項次
+    if (syncCurrentEventNo !== null && syncCurrentEventNo !== undefined) {
+      // 找到該項次的第一個組別
+      const syncIndex = groups.findIndex(g => g.eventNo === syncCurrentEventNo);
+      if (syncIndex !== -1) {
+        return syncIndex;
+      }
+    }
+    
+    // 2. 找到最後一個有 actualEnd 的項次
     let lastFinishedIndex = -1;
     for (let i = 0; i < groups.length; i++) {
       if (groups[i].actualEnd) {
@@ -60,7 +72,7 @@ export const ScheduleTable = ({ groups, onActualEndChange }: ScheduleTableProps)
       return -1;
     }
     
-    // 如果沒有任何 actualEnd，則用時間判斷第一個符合的
+    // 3. 如果沒有任何 actualEnd，則用時間判斷第一個符合的
     for (let i = 0; i < groups.length; i++) {
       const group = groups[i];
       if (!group.scheduledStart || !group.scheduledEnd) continue;
