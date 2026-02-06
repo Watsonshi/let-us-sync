@@ -40,11 +40,44 @@ export const ScheduleTable = ({ groups, onActualEndChange }: ScheduleTableProps)
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const isCurrentEvent = (group: SwimGroup): boolean => {
-    if (!group.scheduledStart || !group.scheduledEnd) return false;
-    const start = group.actualStart ?? group.scheduledStart;
-    const end = group.actualEnd ?? group.scheduledEnd;
-    return currentTime >= start && currentTime < end;
+  // 找到當前比賽的 index：最後一個有 actualEnd 的項次之後的那一個
+  const getCurrentEventIndex = (): number => {
+    // 找到最後一個有 actualEnd 的項次
+    let lastFinishedIndex = -1;
+    for (let i = 0; i < groups.length; i++) {
+      if (groups[i].actualEnd) {
+        lastFinishedIndex = i;
+      }
+    }
+    
+    // 如果有已完成的項次，下一個就是當前比賽
+    if (lastFinishedIndex >= 0) {
+      const nextIndex = lastFinishedIndex + 1;
+      if (nextIndex < groups.length) {
+        return nextIndex;
+      }
+      // 所有項次都已完成
+      return -1;
+    }
+    
+    // 如果沒有任何 actualEnd，則用時間判斷第一個符合的
+    for (let i = 0; i < groups.length; i++) {
+      const group = groups[i];
+      if (!group.scheduledStart || !group.scheduledEnd) continue;
+      const start = group.scheduledStart;
+      const end = group.scheduledEnd;
+      if (currentTime >= start && currentTime < end) {
+        return i;
+      }
+    }
+    
+    return -1;
+  };
+
+  const currentEventIndex = getCurrentEventIndex();
+
+  const isCurrentEvent = (index: number): boolean => {
+    return index === currentEventIndex;
   };
 
   // Mobile card view
@@ -92,7 +125,7 @@ export const ScheduleTable = ({ groups, onActualEndChange }: ScheduleTableProps)
       <div className="space-y-3">
         {dayGroups.map((group, idx) => {
           const originalIndex = indices[idx];
-          const isCurrent = isCurrentEvent(group);
+          const isCurrent = isCurrentEvent(originalIndex);
           
           return (
             <Card key={`${group.eventNo}-${group.heatNum}-${group.heatTotal}`} 
@@ -252,7 +285,7 @@ export const ScheduleTable = ({ groups, onActualEndChange }: ScheduleTableProps)
               }
 
                 // 添加數據行
-                const isCurrent = isCurrentEvent(group);
+                const isCurrent = isCurrentEvent(index);
                 rows.push(
                   <tr 
                     key={`${group.eventNo}-${group.heatNum}-${group.heatTotal}`}
