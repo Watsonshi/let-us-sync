@@ -43,14 +43,56 @@ export const ScheduleTable = ({ groups, onActualEndChange, syncCurrentEventNo }:
   };
 
   // 找到當前比賽的 index
-  // 優先使用外部同步的 syncCurrentEventNo，否則使用 actualEnd 或時間判斷
+  // 優先使用外部同步的 syncCurrentEventNo，但在同一項次內仍根據時間或 actualEnd 判斷具體組別
   const getCurrentEventIndex = (): number => {
     // 1. 優先使用外部同步的項次
     if (syncCurrentEventNo !== null && syncCurrentEventNo !== undefined) {
-      // 找到該項次的第一個組別
-      const syncIndex = groups.findIndex(g => g.eventNo === syncCurrentEventNo);
-      if (syncIndex !== -1) {
-        return syncIndex;
+      // 找到該項次的所有組別
+      const syncEventGroups: number[] = [];
+      groups.forEach((g, idx) => {
+        if (g.eventNo === syncCurrentEventNo) {
+          syncEventGroups.push(idx);
+        }
+      });
+      
+      if (syncEventGroups.length > 0) {
+        // 在該項次的組別中，找到最後一個有 actualEnd 的組別
+        let lastFinishedInEvent = -1;
+        for (const idx of syncEventGroups) {
+          if (groups[idx].actualEnd) {
+            lastFinishedInEvent = idx;
+          }
+        }
+        
+        // 如果有已完成的組別，下一個就是當前比賽
+        if (lastFinishedInEvent >= 0) {
+          const nextIdx = syncEventGroups.indexOf(lastFinishedInEvent) + 1;
+          if (nextIdx < syncEventGroups.length) {
+            return syncEventGroups[nextIdx];
+          }
+          // 該項次所有組別都已完成，返回最後一組
+          return syncEventGroups[syncEventGroups.length - 1];
+        }
+        
+        // 沒有 actualEnd，則用時間判斷該項次內的組別
+        for (const idx of syncEventGroups) {
+          const group = groups[idx];
+          if (!group.scheduledStart || !group.scheduledEnd) continue;
+          if (currentTime >= group.scheduledStart && currentTime < group.scheduledEnd) {
+            return idx;
+          }
+        }
+        
+        // 如果時間都不符合，找第一個尚未開始的組別
+        for (const idx of syncEventGroups) {
+          const group = groups[idx];
+          if (group.scheduledStart && currentTime < group.scheduledStart) {
+            return idx;
+          }
+        }
+        
+        // 都不符合則返回第一組
+        return syncEventGroups[0];
       }
     }
     
