@@ -100,7 +100,7 @@ const SwimmingSchedule = () => {
     isPolling,
   } = useRaceSyncStatus({
     autoPolling: false, // 預設不自動輪詢，讓管理員手動控制
-    pollingInterval: 10000, // 10 秒
+    pollingInterval: 30000, // 30 秒
     onEventChange: handleEventChange,
   });
 
