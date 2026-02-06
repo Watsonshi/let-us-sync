@@ -141,10 +141,10 @@ Deno.serve(async (req) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          url: sourceUrl,
+          url: `${sourceUrl}?_t=${Date.now()}`, // 加上時間戳記避免快取
           formats: ['markdown', 'html'],
           onlyMainContent: false,
-          waitFor: 2000, // 等待 2 秒讓 JavaScript 渲染
+          waitFor: 3000, // 等待 3 秒讓 JavaScript 渲染
         }),
       });
 
