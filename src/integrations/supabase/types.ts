@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      actual_times: {
+        Row: {
+          actual_end: string
+          created_at: string | null
+          event_no: number
+          heat_num: number
+          id: string
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          actual_end: string
+          created_at?: string | null
+          event_no: number
+          heat_num: number
+          id?: string
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          actual_end?: string
+          created_at?: string | null
+          event_no?: number
+          heat_num?: number
+          id?: string
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       swimming_schedule: {
         Row: {
           age_group: string
