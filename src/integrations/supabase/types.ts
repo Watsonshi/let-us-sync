@@ -44,6 +44,42 @@ export type Database = {
         }
         Relationships: []
       }
+      race_sync_status: {
+        Row: {
+          created_at: string
+          current_event_no: number | null
+          id: string
+          inspection_event_no: number | null
+          last_synced_at: string
+          raw_current_text: string | null
+          raw_inspection_text: string | null
+          source_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_event_no?: number | null
+          id?: string
+          inspection_event_no?: number | null
+          last_synced_at?: string
+          raw_current_text?: string | null
+          raw_inspection_text?: string | null
+          source_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_event_no?: number | null
+          id?: string
+          inspection_event_no?: number | null
+          last_synced_at?: string
+          raw_current_text?: string | null
+          raw_inspection_text?: string | null
+          source_url?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       swimming_schedule: {
         Row: {
           age_group: string

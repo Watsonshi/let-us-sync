@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 import { CurrentTime } from '@/components/CurrentTime';
@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useActualTimeSync } from '@/hooks/useActualTimeSync';
-
+import { useRaceSyncStatus } from '@/hooks/useRaceSyncStatus';
 const SwimmingSchedule = () => {
   const navigate = useNavigate();
   const { user, isAdmin, loading: authLoading, signOut } = useAuth();
@@ -29,6 +29,31 @@ const SwimmingSchedule = () => {
     clearAllActualTimes: clearAllActualTimesDb,
     getActualTime 
   } = useActualTimeSync();
+
+  // 外部比賽資訊同步
+  const handleEventChange = useCallback((previousEventNo: number, newEventNo: number) => {
+    console.log(`項次變更: ${previousEventNo} -> ${newEventNo}`);
+    toast({
+      title: "比賽進度更新",
+      description: `目前比賽項次已從 ${previousEventNo} 進入 ${newEventNo}`,
+    });
+  }, []);
+
+  const {
+    syncStatus,
+    isLoading: syncLoading,
+    isSyncing,
+    error: syncError,
+    lastScrapeResult,
+    triggerSync,
+    startPolling,
+    stopPolling,
+    isPolling,
+  } = useRaceSyncStatus({
+    autoPolling: false, // 預設不自動輪詢，讓管理員手動控制
+    pollingInterval: 10000, // 10 秒
+    onEventChange: handleEventChange,
+  });
   
   const [groups, setGroups] = useState<SwimGroup[]>([]);
   const [players, setPlayers] = useState<PlayerData[]>([]);
@@ -965,6 +990,14 @@ const SwimmingSchedule = () => {
           <CurrentRaceCard 
             currentGroup={currentGroup}
             inspectionGroup={inspectionGroup}
+            syncStatus={syncStatus}
+            isSyncing={isSyncing}
+            isPolling={isPolling}
+            lastScrapeResult={lastScrapeResult}
+            onTriggerSync={triggerSync}
+            onStartPolling={startPolling}
+            onStopPolling={stopPolling}
+            showSyncControls={isAdmin}
           />
         )}
 
