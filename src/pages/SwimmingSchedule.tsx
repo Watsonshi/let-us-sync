@@ -243,7 +243,10 @@ const SwimmingSchedule = () => {
     let cursor: Date | null = null;
     let currentDay = '';
 
-    const allWithTimes = allSorted.map((g, i) => {
+    // 使用 reduce 而非 map，這樣可以在每次迭代時存取已計算的前一組結果
+    const allWithTimes: SwimGroup[] = [];
+    
+    allSorted.forEach((g, i) => {
       if (g.dayLabel && g.dayLabel !== currentDay) {
         currentDay = g.dayLabel;
         const dayStartTime = getDayStartTime(g.dayKey);
@@ -255,11 +258,12 @@ const SwimmingSchedule = () => {
         cursor = parseTimeInputToDate(base, '08:15');
       }
 
-      if (i > 0 && allSorted[i - 1].dayLabel === g.dayLabel) {
-        const prev = allSorted[i - 1];
-        if (prev.actualEnd) {
-          cursor = addSeconds(prev.actualEnd, config.turnover);
-        }
+      // 使用已計算的前一組結果來更新 cursor
+      if (i > 0 && allWithTimes[i - 1]?.dayLabel === g.dayLabel) {
+        const prev = allWithTimes[i - 1];
+        // 使用前一組的實際結束時間或預估結束時間
+        const prevEnd = prev.actualEnd ?? prev.scheduledEnd;
+        cursor = addSeconds(prevEnd, config.turnover);
       }
 
       // 跳過午休時段
@@ -275,10 +279,7 @@ const SwimmingSchedule = () => {
         actualEnd: g.actualEnd,
       };
 
-      const displayEnd = g.actualEnd ?? estEnd;
-      cursor = addSeconds(displayEnd, config.turnover);
-
-      return updatedGroup;
+      allWithTimes.push(updatedGroup);
     });
 
     // 然後應用篩選
