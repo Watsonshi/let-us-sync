@@ -59,7 +59,7 @@ export function useRaceSyncStatus(options: UseRaceSyncStatusOptions = {}): UseRa
       const data = await getRaceSyncStatus();
       if (data) {
         setSyncStatus(data);
-        previousEventNoRef.current = data.current_event_no;
+        previousEventNoRef.current = data.inspection_event_no;
       }
       setIsLoading(false);
     };
@@ -85,13 +85,13 @@ export function useRaceSyncStatus(options: UseRaceSyncStatusOptions = {}): UseRa
             if (
               onEventChange &&
               previousEventNoRef.current !== null &&
-              newData.current_event_no !== null &&
-              previousEventNoRef.current !== newData.current_event_no
+              newData.inspection_event_no !== null &&
+              previousEventNoRef.current !== newData.inspection_event_no
             ) {
-              onEventChange(previousEventNoRef.current, newData.current_event_no);
+              onEventChange(previousEventNoRef.current, newData.inspection_event_no);
             }
 
-            previousEventNoRef.current = newData.current_event_no;
+            previousEventNoRef.current = newData.inspection_event_no;
           }
         }
       )

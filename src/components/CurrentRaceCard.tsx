@@ -56,7 +56,8 @@ export const CurrentRaceCard = ({
 
   // 決定顯示的項次資訊
   // 優先使用外部同步的資料，如果沒有則使用本地推算的資料
-  const displayCurrentEventNo = syncStatus?.current_event_no ?? currentGroup?.eventNo ?? null;
+  // 不再使用外部同步的 current_event_no（游泳協會網站資訊不準確）
+  const displayCurrentEventNo = currentGroup?.eventNo ?? null;
   const displayInspectionEventNo = syncStatus?.inspection_event_no ?? inspectionGroup?.eventNo ?? null;
 
   return (
@@ -122,18 +123,9 @@ export const CurrentRaceCard = ({
         <div className="space-y-2">
           <div className="text-sm font-medium text-muted-foreground">目前比賽組別</div>
           <div className="text-2xl font-bold text-primary">
-            {hasExternalSync && displayCurrentEventNo ? (
-              <span>項次 {displayCurrentEventNo}</span>
-            ) : (
-              formatGroupInfo(currentGroup)
-            )}
+            {formatGroupInfo(currentGroup)}
           </div>
-          {hasExternalSync && syncStatus?.raw_current_text ? (
-            <div className="text-sm text-muted-foreground flex items-center gap-1">
-              <ExternalLink className="h-3 w-3" />
-              {syncStatus.raw_current_text}
-            </div>
-          ) : currentGroup ? (
+          {currentGroup ? (
             <div className="text-sm text-muted-foreground">
               {currentGroup.ageGroup} {currentGroup.gender} {currentGroup.eventType}
             </div>
