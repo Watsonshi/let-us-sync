@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { SwimGroup } from '@/types/swimming';
 import { fmtHM, mmss } from '@/utils/timeUtils';
+import { findCurrentEventIndex } from '@/utils/currentEventDetection';
 import { Clock, Trophy, Users, Target, Hash, Timer, ChevronUp, Lock } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/hooks/useAuth';
@@ -11,11 +12,9 @@ import { useAuth } from '@/hooks/useAuth';
 interface ScheduleTableProps {
   groups: SwimGroup[];
   onActualEndChange: (groupIndex: number, time: string) => void;
-  /** 外部同步的當前比賽項次（優先使用此值來判斷高亮） */
-  syncCurrentEventNo?: number | null;
 }
 
-export const ScheduleTable = ({ groups, onActualEndChange, syncCurrentEventNo }: ScheduleTableProps) => {
+export const ScheduleTable = ({ groups, onActualEndChange }: ScheduleTableProps) => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showBackToTop, setShowBackToTop] = useState(false);
   const isMobile = useIsMobile();
@@ -42,93 +41,7 @@ export const ScheduleTable = ({ groups, onActualEndChange, syncCurrentEventNo }:
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // 找到當前比賽的 index
-  // 優先使用外部同步的 syncCurrentEventNo，但在同一項次內仍根據時間或 actualEnd 判斷具體組別
-  const getCurrentEventIndex = (): number => {
-    // 1. 優先使用外部同步的項次
-    if (syncCurrentEventNo !== null && syncCurrentEventNo !== undefined) {
-      // 找到該項次的所有組別
-      const syncEventGroups: number[] = [];
-      groups.forEach((g, idx) => {
-        if (g.eventNo === syncCurrentEventNo) {
-          syncEventGroups.push(idx);
-        }
-      });
-      
-      if (syncEventGroups.length > 0) {
-        // 在該項次的組別中，找到最後一個有 actualEnd 的組別
-        let lastFinishedInEvent = -1;
-        for (const idx of syncEventGroups) {
-          if (groups[idx].actualEnd) {
-            lastFinishedInEvent = idx;
-          }
-        }
-        
-        // 如果有已完成的組別，下一個就是當前比賽
-        if (lastFinishedInEvent >= 0) {
-          const nextIdx = syncEventGroups.indexOf(lastFinishedInEvent) + 1;
-          if (nextIdx < syncEventGroups.length) {
-            return syncEventGroups[nextIdx];
-          }
-          // 該項次所有組別都已完成，返回最後一組
-          return syncEventGroups[syncEventGroups.length - 1];
-        }
-        
-        // 沒有 actualEnd，則用時間判斷該項次內的組別
-        for (const idx of syncEventGroups) {
-          const group = groups[idx];
-          if (!group.scheduledStart || !group.scheduledEnd) continue;
-          if (currentTime >= group.scheduledStart && currentTime < group.scheduledEnd) {
-            return idx;
-          }
-        }
-        
-        // 如果時間都不符合，找第一個尚未開始的組別
-        for (const idx of syncEventGroups) {
-          const group = groups[idx];
-          if (group.scheduledStart && currentTime < group.scheduledStart) {
-            return idx;
-          }
-        }
-        
-        // 都不符合則返回第一組
-        return syncEventGroups[0];
-      }
-    }
-    
-    // 2. 找到最後一個有 actualEnd 的項次
-    let lastFinishedIndex = -1;
-    for (let i = 0; i < groups.length; i++) {
-      if (groups[i].actualEnd) {
-        lastFinishedIndex = i;
-      }
-    }
-    
-    // 如果有已完成的項次，下一個就是當前比賽
-    if (lastFinishedIndex >= 0) {
-      const nextIndex = lastFinishedIndex + 1;
-      if (nextIndex < groups.length) {
-        return nextIndex;
-      }
-      // 所有項次都已完成
-      return -1;
-    }
-    
-    // 3. 如果沒有任何 actualEnd，則用時間判斷第一個符合的
-    for (let i = 0; i < groups.length; i++) {
-      const group = groups[i];
-      if (!group.scheduledStart || !group.scheduledEnd) continue;
-      const start = group.scheduledStart;
-      const end = group.scheduledEnd;
-      if (currentTime >= start && currentTime < end) {
-        return i;
-      }
-    }
-    
-    return -1;
-  };
-
-  const currentEventIndex = getCurrentEventIndex();
+  const currentEventIndex = findCurrentEventIndex(groups, currentTime);
 
   const isCurrentEvent = (index: number): boolean => {
     return index === currentEventIndex;
