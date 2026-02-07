@@ -7,7 +7,7 @@ import { FileUpload } from '@/components/FileUpload';
 import { ScheduleTable } from '@/components/ScheduleTable';
 import { CurrentRaceCard } from '@/components/CurrentRaceCard';
 import { SwimGroup, ScheduleConfig, FilterOptions, PlayerData } from '@/types/swimming';
-import { parseExcelFile, buildGroupsFromRows, dayKeyOfEvent, dayLabelOfKey } from '@/utils/excelUtils';
+import { parseExcelFile, buildGroupsFromRows, dayKeyOfEvent, dayLabelOfKey, getTodayDayKey } from '@/utils/excelUtils';
 import { parseMmSs, parseTimeInputToDate, addSeconds } from '@/utils/timeUtils';
 import { findCurrentEventIndex } from '@/utils/currentEventDetection';
 import { parsePlayerCSV, getUniquePlayersFromCSV } from '@/utils/csvUtils';
@@ -104,11 +104,9 @@ const SwimmingSchedule = () => {
         if (newGroups.length > 0) {
           setGroups(newGroups);
           
-          // 自動選擇第一天
-          const firstDay = newGroups[0]?.dayKey;
-          if (firstDay) {
-            setFilters(prev => ({ ...prev, daySelect: firstDay }));
-          }
+          // 自動選擇今天對應的比賽天數
+          const todayKey = getTodayDayKey();
+          setFilters(prev => ({ ...prev, daySelect: todayKey }));
         }
       } catch (error) {
         console.error('自動載入預設賽程失敗:', error);
