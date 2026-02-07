@@ -9,6 +9,7 @@ import { CurrentRaceCard } from '@/components/CurrentRaceCard';
 import { SwimGroup, ScheduleConfig, FilterOptions, PlayerData } from '@/types/swimming';
 import { parseExcelFile, buildGroupsFromRows, dayKeyOfEvent, dayLabelOfKey } from '@/utils/excelUtils';
 import { parseMmSs, parseTimeInputToDate, addSeconds } from '@/utils/timeUtils';
+import { findCurrentEventIndex } from '@/utils/currentEventDetection';
 import { parsePlayerCSV, getUniquePlayersFromCSV } from '@/utils/csvUtils';
 import { Waves, Timer, LogOut } from 'lucide-react';
 import HeroBanner from '@/components/HeroBanner';
@@ -394,22 +395,10 @@ const SwimmingSchedule = () => {
     // 自動隱藏已完賽組別，只保留當前比賽組別前15項
     if (filtered.length > 15) {
       const now = new Date();
+      const currentGroupIndex = findCurrentEventIndex(filtered, now);
       
-      // 找到當前正在比賽的組別（當前時間在 scheduledStart 和 scheduledEnd 之間）
-      // 或者找到即將比賽的組別（當前時間還沒到 scheduledStart）
-      let currentGroupIndex = filtered.findIndex(g => {
-        const start = g.scheduledStart;
-        const end = g.actualEnd || g.scheduledEnd;
-        return now >= start && now <= end;
-      });
-      
-      // 如果找不到正在比賽的組別，找到第一個還沒開始的組別
       if (currentGroupIndex === -1) {
-        currentGroupIndex = filtered.findIndex(g => now < g.scheduledStart);
-      }
-      
-      // 如果還是找不到（所有組別都已結束），顯示最後15項
-      if (currentGroupIndex === -1) {
+        // 所有組別都已結束，顯示最後15項
         filtered = filtered.slice(-15);
       } else {
         // 保留當前組別及其前14項（共15項）到結尾
@@ -424,43 +413,9 @@ const SwimmingSchedule = () => {
   // 計算當前比賽組別和準備檢錄組別
   const { currentGroup, inspectionGroup } = useMemo(() => {
     const now = new Date();
-    
-    console.log('=== 檢查當前比賽組別 ===');
-    console.log('當前時間:', now.toLocaleTimeString());
-    console.log('processedGroups 數量:', processedGroups.length);
-    
-    // 找到當前正在比賽的組別（當前時間在 scheduledStart 和 actualEnd/scheduledEnd 之間）
-    const currentIndex = processedGroups.findIndex((g, idx) => {
-      const start = g.scheduledStart;
-      const end = g.actualEnd || g.scheduledEnd;
-      const isInRange = now >= start && now <= end;
-      
-      if (idx < 5) { // 只顯示前5組的資訊
-        console.log(`組別 ${idx}: 項次${g.eventNo} ${g.heatNum}/${g.heatTotal}`);
-        console.log(`  scheduledStart: ${start.toLocaleTimeString()}`);
-        console.log(`  scheduledEnd: ${g.scheduledEnd.toLocaleTimeString()}`);
-        console.log(`  actualEnd: ${g.actualEnd ? g.actualEnd.toLocaleTimeString() : '無'}`);
-        console.log(`  使用的結束時間: ${end.toLocaleTimeString()}`);
-        console.log(`  是否在範圍內: ${isInRange}`);
-      }
-      
-      return isInRange;
-    });
-    
-    console.log('找到的 currentIndex:', currentIndex);
-    
-    // 如果找不到正在比賽的組別，找到第一個還沒開始的組別
-    const currentIdx = currentIndex === -1 
-      ? processedGroups.findIndex(g => now < g.scheduledStart)
-      : currentIndex;
-    
-    console.log('最終的 currentIdx:', currentIdx);
+    const currentIdx = findCurrentEventIndex(processedGroups, now);
     
     const current = currentIdx !== -1 ? processedGroups[currentIdx] : null;
-    
-    if (current) {
-      console.log('當前比賽組別:', `項次${current.eventNo} ${current.heatNum}/${current.heatTotal}`);
-    }
     
     // 準備檢錄組別為當前組別往後第10組
     const inspectionIdx = currentIdx !== -1 ? currentIdx + 10 : -1;
@@ -995,10 +950,9 @@ const SwimmingSchedule = () => {
         {/* Schedule Table */}
         {filters.daySelect && processedGroups.length > 0 ? (
           <ScheduleTable
-              groups={processedGroups}
-              onActualEndChange={handleActualEndChange}
-              syncCurrentEventNo={undefined}
-            />
+               groups={processedGroups}
+               onActualEndChange={handleActualEndChange}
+             />
         ) : groups.length > 0 && !filters.daySelect ? (
           <div className="text-center py-12">
             <div className="p-6 bg-muted/50 rounded-2xl inline-block">
