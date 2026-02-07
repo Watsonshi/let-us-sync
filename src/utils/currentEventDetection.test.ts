@@ -68,8 +68,10 @@ describe('findCurrentEventIndex', () => {
       makeGroup({ eventNo: 1, heatNum: 2, scheduledStart: time(8, 10), scheduledEnd: time(8, 20) }), // no actualEnd
       makeGroup({ eventNo: 2, heatNum: 1, scheduledStart: time(8, 20), scheduledEnd: time(8, 30) }),
     ];
-    // Last actualEnd is index 0, so current should be index 1
-    expect(findCurrentEventIndex(groups, time(8, 25))).toBe(1);
+    // Last actualEnd is index 0; index 1 scheduledEnd (8:20) < now (8:25), so skip to index 2
+    expect(findCurrentEventIndex(groups, time(8, 25))).toBe(2);
+    // If time is 8:15 (still within index 1's scheduled window), index 1 is current
+    expect(findCurrentEventIndex(groups, time(8, 15))).toBe(1);
   });
 
   it('returns -1 when all groups are in the past and none has actualEnd', () => {
