@@ -20,13 +20,24 @@ export function findCurrentEventIndex(groups: SwimGroup[], now: Date): number {
     }
   }
 
-  // 如果有已完成的組別，下一個就是當前比賽
+  // 如果有已完成的組別，從下一個開始用時間判斷是否也已超過預估結束
   if (lastFinishedIndex >= 0) {
     const nextIndex = lastFinishedIndex + 1;
-    if (nextIndex < groups.length) {
-      return nextIndex;
+    if (nextIndex >= groups.length) {
+      // 所有組別都已完成
+      return -1;
     }
-    // 所有組別都已完成
+
+    // 從 nextIndex 開始，若該組的 scheduledEnd 已過且沒有 actualEnd，繼續往後找
+    for (let i = nextIndex; i < groups.length; i++) {
+      const group = groups[i];
+      // 如果這組沒有 scheduledEnd 或當前時間還沒超過預估結束，就是當前比賽
+      if (!group.scheduledEnd || now < group.scheduledEnd) {
+        return i;
+      }
+    }
+
+    // 所有後續組別的預估結束時間都已過
     return -1;
   }
 
