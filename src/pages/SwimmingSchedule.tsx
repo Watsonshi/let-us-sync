@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 import { CurrentTime } from '@/components/CurrentTime';
@@ -47,47 +47,7 @@ const SwimmingSchedule = () => {
     playerSearch: '', // 選手名稱搜尋
   });
 
-  // 外部比賽資訊同步 - 當項次變更時自動更新 actualEnd
-  const handleEventChange = useCallback(async (previousEventNo: number, newEventNo: number) => {
-    console.log(`項次變更: ${previousEventNo} -> ${newEventNo}`);
-    
-    // 當項次變更時，自動為前一個項次的所有組別設定 actualEnd
-    if (previousEventNo > 0 && isAdmin) {
-      const now = new Date();
-      
-      // 找到前一個項次的所有組別
-      const previousEventGroups = groups.filter(g => g.eventNo === previousEventNo);
-      
-      if (previousEventGroups.length > 0) {
-        console.log(`自動為項次 ${previousEventNo} 的 ${previousEventGroups.length} 個組別設定 actualEnd`);
-        
-        // 為每個組別設定 actualEnd（使用當前時間）
-        for (const group of previousEventGroups) {
-          // 檢查是否已有 actualEnd
-          const existingActualTime = getActualTime(group.eventNo, group.heatNum);
-          if (!existingActualTime) {
-            await saveActualTime(group.eventNo, group.heatNum, now);
-          }
-        }
-        
-        toast({
-          title: "比賽進度更新",
-          description: `項次 ${previousEventNo} 已自動標記完成，目前進入項次 ${newEventNo}`,
-        });
-      } else {
-        toast({
-          title: "比賽進度更新",
-          description: `目前比賽項次已從 ${previousEventNo} 進入 ${newEventNo}`,
-        });
-      }
-    } else {
-      toast({
-        title: "比賽進度更新",
-        description: `目前比賽項次已從 ${previousEventNo} 進入 ${newEventNo}`,
-      });
-    }
-  }, [groups, isAdmin, saveActualTime, getActualTime]);
-
+  // 外部比賽資訊同步 - 僅用於顯示檢錄項次，不再自動設定 actualEnd
   const {
     syncStatus,
     isLoading: syncLoading,
@@ -99,9 +59,8 @@ const SwimmingSchedule = () => {
     stopPolling,
     isPolling,
   } = useRaceSyncStatus({
-    autoPolling: false, // 預設不自動輪詢，讓管理員手動控制
-    pollingInterval: 30000, // 30 秒
-    onEventChange: handleEventChange,
+    autoPolling: false,
+    pollingInterval: 30000,
   });
 
   // 自動載入預設賽程（從 default-schedule.xlsx）
