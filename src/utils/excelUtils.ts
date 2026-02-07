@@ -7,10 +7,19 @@ import { isNewFormatExcel, parseNewFormatExcel } from './newFormatParser';
 const REQUIRED_HEADERS = ['項次', '組次', '年齡組', '性別', '比賽項目', '姓名', '單位', '報名成績'];
 
 const DAY_RULES = [
-  { key: 'd1', label: '第一天（115/2/6，五）', start: 1, end: 54 },
-  { key: 'd2', label: '第二天（115/2/7，六）', start: 55, end: 116 },
-  { key: 'd3', label: '第三天（115/2/8，日）', start: 117, end: 176 },
+  { key: 'd1', label: '第一天（115/2/6，五）', start: 1, end: 54, month: 2, day: 6 },
+  { key: 'd2', label: '第二天（115/2/7，六）', start: 55, end: 116, month: 2, day: 7 },
+  { key: 'd3', label: '第三天（115/2/8，日）', start: 117, end: 176, month: 2, day: 8 },
 ];
+
+/** 根據今天日期自動判斷對應的比賽天數 key，找不到則回傳第一天 */
+export const getTodayDayKey = (): string => {
+  const now = new Date();
+  const m = now.getMonth() + 1;
+  const d = now.getDate();
+  const match = DAY_RULES.find(r => r.month === m && r.day === d);
+  return match ? match.key : DAY_RULES[0].key;
+};
 
 export const dayKeyOfEvent = (ev: number): string => {
   for (const d of DAY_RULES) {
