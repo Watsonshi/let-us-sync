@@ -755,6 +755,10 @@ const SwimmingSchedule = () => {
     const targetGroup = processedGroups[groupIndex];
     if (!targetGroup) return;
 
+    // 防護：若新值與現有值相同，不重複儲存（避免 re-render 觸發連鎖寫入）
+    const currentValue = targetGroup.actualEnd ? fmtHM(targetGroup.actualEnd) : '';
+    if (time === currentValue) return;
+
     if (!time) {
       // 清除實際結束時間
       const success = await removeActualTime(targetGroup.eventNo, targetGroup.heatNum);
