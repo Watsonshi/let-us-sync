@@ -25,28 +25,27 @@ describe('findCurrentEventIndex', () => {
     expect(findCurrentEventIndex([], new Date())).toBe(-1);
   });
 
-  it('returns index after last actualEnd group', () => {
+  it('highlights next group after last actualEnd', () => {
     const groups = [
       makeGroup({ eventNo: 1, heatNum: 1, scheduledStart: time(8, 0), scheduledEnd: time(8, 10), actualEnd: time(8, 9) }),
       makeGroup({ eventNo: 1, heatNum: 2, scheduledStart: time(8, 10), scheduledEnd: time(8, 20), actualEnd: time(8, 18) }),
       makeGroup({ eventNo: 2, heatNum: 1, scheduledStart: time(8, 20), scheduledEnd: time(8, 30) }),
       makeGroup({ eventNo: 2, heatNum: 2, scheduledStart: time(8, 30), scheduledEnd: time(8, 40) }),
     ];
-    // 最後有 actualEnd 的是 index 1 → 當前比賽 = index 2
+    // now=8:25, 在 index 2 的區間內 → 高亮 index 2
     expect(findCurrentEventIndex(groups, time(8, 25))).toBe(2);
   });
 
-  it('highlight stays on next group regardless of time', () => {
-    // 即使當前時間已超過 index 2 的預估結束，高亮仍停在 index 2
-    // 因為只有使用者手動輸入 actualEnd 才會推進
+  it('advances highlight by time when user has not entered actualEnd', () => {
+    // actualEnd 停在 index 1，但時間已超過 index 2 的預估結束
     const groups = [
       makeGroup({ eventNo: 1, heatNum: 1, scheduledStart: time(8, 0), scheduledEnd: time(8, 10), actualEnd: time(8, 9) }),
       makeGroup({ eventNo: 1, heatNum: 2, scheduledStart: time(8, 10), scheduledEnd: time(8, 20), actualEnd: time(8, 18) }),
       makeGroup({ eventNo: 2, heatNum: 1, scheduledStart: time(8, 20), scheduledEnd: time(8, 30) }),
       makeGroup({ eventNo: 2, heatNum: 2, scheduledStart: time(8, 30), scheduledEnd: time(8, 40) }),
     ];
-    // 即使 now=9:00 遠超過 index 2 的 scheduledEnd，高亮仍在 index 2
-    expect(findCurrentEventIndex(groups, time(9, 0))).toBe(2);
+    // now=8:35, index 2 的 scheduledEnd(8:30) 已過 → 跳到 index 3
+    expect(findCurrentEventIndex(groups, time(8, 35))).toBe(3);
   });
 
   it('returns -1 when all groups have actualEnd', () => {
@@ -82,14 +81,25 @@ describe('findCurrentEventIndex', () => {
     expect(findCurrentEventIndex(groups, time(18, 0))).toBe(-1);
   });
 
-  it('actualEnd-based detection takes priority over time-based', () => {
+  it('actualEnd-based start takes priority over time-based', () => {
     const groups = [
       makeGroup({ eventNo: 1, heatNum: 1, scheduledStart: time(8, 0), scheduledEnd: time(8, 10), actualEnd: time(8, 5) }),
       makeGroup({ eventNo: 1, heatNum: 2, scheduledStart: time(8, 10), scheduledEnd: time(8, 20), actualEnd: time(8, 12) }),
       makeGroup({ eventNo: 2, heatNum: 1, scheduledStart: time(8, 20), scheduledEnd: time(8, 30), actualEnd: time(8, 22) }),
       makeGroup({ eventNo: 2, heatNum: 2, scheduledStart: time(8, 30), scheduledEnd: time(8, 40) }),
     ];
-    // 最後有 actualEnd 的是 index 2 → 當前比賽 = index 3
+    // 最後 actualEnd 在 index 2，index 3 的 scheduledEnd(8:40) 未過 → 高亮 index 3
     expect(findCurrentEventIndex(groups, time(8, 5))).toBe(3);
+  });
+
+  it('skips multiple groups when time has advanced far', () => {
+    const groups = [
+      makeGroup({ eventNo: 1, heatNum: 1, scheduledStart: time(8, 0), scheduledEnd: time(8, 10), actualEnd: time(8, 8) }),
+      makeGroup({ eventNo: 1, heatNum: 2, scheduledStart: time(8, 10), scheduledEnd: time(8, 20) }),
+      makeGroup({ eventNo: 2, heatNum: 1, scheduledStart: time(8, 20), scheduledEnd: time(8, 30) }),
+      makeGroup({ eventNo: 2, heatNum: 2, scheduledStart: time(8, 30), scheduledEnd: time(8, 40) }),
+    ];
+    // actualEnd 在 index 0，now=8:25 → index 1 的 scheduledEnd(8:20) 已過，跳到 index 2
+    expect(findCurrentEventIndex(groups, time(8, 25))).toBe(2);
   });
 });
