@@ -953,21 +953,7 @@ const SwimmingSchedule = () => {
           </div>
         )}
 
-        {/* Current Race Card */}
-        {processedGroups.length > 0 && (
-          <CurrentRaceCard 
-            currentGroup={currentGroup}
-            inspectionGroup={inspectionGroup}
-            syncStatus={syncStatus}
-            isSyncing={isSyncing}
-            isPolling={isPolling}
-            lastScrapeResult={lastScrapeResult}
-            onTriggerSync={triggerSync}
-            onStartPolling={startPolling}
-            onStopPolling={stopPolling}
-            showSyncControls={isAdmin}
-          />
-        )}
+        {/* Current Race Card - 已停用 */}
 
         {/* Schedule Table */}
         {isLoading ? (
