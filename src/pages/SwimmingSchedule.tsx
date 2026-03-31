@@ -963,17 +963,10 @@ const SwimmingSchedule = () => {
         {/* Schedule Table */}
         {isLoading ? (
           <ScheduleSkeleton />
-        ) : filters.daySelect && processedGroups.length > 0 ? (
+        ) : processedGroups.length > 0 ? (
           <ScheduleTable
             groups={processedGroups}
             onActualEndChange={handleActualEndChange}
-          />
-        ) : groups.length > 0 && !filters.daySelect ? (
-          <EmptyState
-            icon={Calendar}
-            emoji="📅"
-            title="請選擇比賽天數"
-            description="請在上方選擇要檢視的比賽日程"
           />
         ) : (
           <EmptyState
