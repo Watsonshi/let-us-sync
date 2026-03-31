@@ -99,7 +99,7 @@ export const ScheduleTable = ({ groups, onActualEndChange }: ScheduleTableProps)
             {/* 項次標題行 */}
             <div className="flex items-center gap-2 px-2 pt-2">
               <div className="h-px flex-1 bg-border" />
-              <span className="text-xs font-semibold text-muted-foreground px-2">
+              <span className="text-sm font-semibold text-muted-foreground px-2">
                 項次 {eg.eventNo} — {eg.items[0]?.group.ageGroup} {eg.items[0]?.group.gender} {eg.items[0]?.group.eventType}
               </span>
               <div className="h-px flex-1 bg-border" />
@@ -128,15 +128,15 @@ export const ScheduleTable = ({ groups, onActualEndChange }: ScheduleTableProps)
                     </div>
 
                     {/* Event details */}
-                    <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div className="grid grid-cols-2 gap-3 text-base">
                       <div className="flex items-center gap-1.5">
-                        <Users className="w-3.5 h-3.5 text-muted-foreground" />
+                        <Users className="w-4 h-4 text-muted-foreground" />
                         <span className="text-muted-foreground">年齡組:</span>
                         <span className="font-medium">{group.ageGroup || '-'}</span>
                       </div>
                       <div className="flex items-center gap-1.5">
                         <span className="text-muted-foreground">性別:</span>
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium
+                        <span className={`px-2 py-0.5 rounded-full text-sm font-medium
                           ${group.gender === '男' ? 'bg-primary/10 text-primary' : 
                             group.gender === '女' ? 'bg-destructive/10 text-destructive' : 
                             'bg-muted text-muted-foreground'}`}>
@@ -145,45 +145,45 @@ export const ScheduleTable = ({ groups, onActualEndChange }: ScheduleTableProps)
                       </div>
                     </div>
 
-                    <div className="text-sm">
+                    <div className="text-base">
                       <span className="text-muted-foreground">項目:</span>
                       <span className="font-medium ml-1.5">{group.eventType || '-'}</span>
                     </div>
 
                     {/* Times */}
-                    <div className="grid grid-cols-2 gap-3 text-sm border-t border-border pt-3">
+                    <div className="grid grid-cols-2 gap-3 text-base border-t border-border pt-3">
                       <div className="text-center min-w-0">
                         <div className="flex items-center justify-center gap-1 text-muted-foreground mb-1">
-                          <Clock className="w-3 h-3" />
-                          <span className="text-xs">預估開始</span>
+                          <Clock className="w-4 h-4" />
+                          <span className="text-sm">預估開始</span>
                         </div>
-                        <div className="font-mono text-sm">{group.scheduledStart ? fmtHM(group.scheduledStart) : '-'}</div>
+                        <div className="font-mono text-base">{group.scheduledStart ? fmtHM(group.scheduledStart) : '-'}</div>
                       </div>
                       <div className="text-center min-w-0">
                         <div className="flex items-center justify-center gap-1 text-muted-foreground mb-1">
-                          <Timer className="w-3 h-3" />
-                          <span className="text-xs">預估結束</span>
+                          <Timer className="w-4 h-4" />
+                          <span className="text-sm">預估結束</span>
                         </div>
-                        <div className="font-mono text-sm">{group.scheduledEnd ? fmtHM(group.scheduledEnd) : '-'}</div>
+                        <div className="font-mono text-base">{group.scheduledEnd ? fmtHM(group.scheduledEnd) : '-'}</div>
                       </div>
                       <div className="text-center min-w-0">
-                        <div className="text-xs text-muted-foreground mb-1">預估完賽</div>
-                        <div className="font-mono text-info font-medium">{mmss(group.avgSeconds)}</div>
+                        <div className="text-sm text-muted-foreground mb-1">預估完賽</div>
+                        <div className="font-mono text-info font-medium text-base">{mmss(group.avgSeconds)}</div>
                       </div>
                       <div className="text-center col-span-2 min-w-0 flex flex-col items-center">
-                        <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
+                        <div className="text-sm text-muted-foreground mb-1 flex items-center gap-1">
                           實際結束
-                          {!isAdmin && <Lock className="w-3 h-3" />}
+                          {!isAdmin && <Lock className="w-3.5 h-3.5" />}
                         </div>
                         {isAdmin ? (
                           <Input
                             type="time"
-                            className="max-w-[180px] w-full min-w-0 h-9 text-sm text-center px-2"
+                            className="max-w-[180px] w-full min-w-0 h-10 text-base text-center px-2"
                             value={group.actualEnd ? fmtHM(group.actualEnd) : ''}
                             onChange={(e) => onActualEndChange(idx, e.target.value)}
                           />
                         ) : (
-                          <div className="font-mono text-sm h-9 flex items-center justify-center text-muted-foreground">
+                          <div className="font-mono text-base h-10 flex items-center justify-center text-muted-foreground">
                             {group.actualEnd ? fmtHM(group.actualEnd) : '-'}
                           </div>
                         )}
