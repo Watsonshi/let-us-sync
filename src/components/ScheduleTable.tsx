@@ -145,7 +145,7 @@ export const ScheduleTable = ({ groups, onActualEndChange }: ScheduleTableProps)
                       </div>
                     </div>
 
-                    <div className="text-sm">
+                    <div className="text-base">
                       <span className="text-muted-foreground">項目:</span>
                       <span className="font-medium ml-1.5">{group.eventType || '-'}</span>
                     </div>
