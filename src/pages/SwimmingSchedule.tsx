@@ -963,6 +963,7 @@ const SwimmingSchedule = () => {
           <ScheduleTable
             groups={processedGroups}
             onActualEndChange={handleActualEndChange}
+            unitFilter={filters.unitSelect}
           />
         ) : (
           <EmptyState

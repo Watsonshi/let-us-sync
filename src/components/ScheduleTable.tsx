@@ -12,6 +12,7 @@ import { useAuth } from '@/hooks/useAuth';
 interface ScheduleTableProps {
   groups: SwimGroup[];
   onActualEndChange: (groupIndex: number, time: string) => void;
+  unitFilter?: string;
 }
 
 export const ScheduleTable = ({ groups, onActualEndChange }: ScheduleTableProps) => {
