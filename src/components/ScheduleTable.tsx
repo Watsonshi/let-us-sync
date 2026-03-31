@@ -99,7 +99,7 @@ export const ScheduleTable = ({ groups, onActualEndChange }: ScheduleTableProps)
             {/* 項次標題行 */}
             <div className="flex items-center gap-2 px-2 pt-2">
               <div className="h-px flex-1 bg-border" />
-              <span className="text-xs font-semibold text-muted-foreground px-2">
+              <span className="text-sm font-semibold text-muted-foreground px-2">
                 項次 {eg.eventNo} — {eg.items[0]?.group.ageGroup} {eg.items[0]?.group.gender} {eg.items[0]?.group.eventType}
               </span>
               <div className="h-px flex-1 bg-border" />
