@@ -15,7 +15,7 @@ interface ScheduleTableProps {
   unitFilter?: string;
 }
 
-export const ScheduleTable = ({ groups, onActualEndChange }: ScheduleTableProps) => {
+export const ScheduleTable = ({ groups, onActualEndChange, unitFilter }: ScheduleTableProps) => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showBackToTop, setShowBackToTop] = useState(false);
   const isMobile = useIsMobile();
