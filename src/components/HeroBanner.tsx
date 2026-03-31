@@ -1,4 +1,4 @@
-import heroBanner from '@/assets/hero-swimming-banner.jpg';
+import heroBanner from '@/assets/hero-swimming-banner-v2.jpg';
 import { Waves } from 'lucide-react';
 
 interface HeroBannerProps {
