@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { SwimGroup } from '@/types/swimming';
 import { fmtHM, mmss } from '@/utils/timeUtils';
 import { findCurrentEventIndex } from '@/utils/currentEventDetection';
-import { Clock, Trophy, Users, Target, Hash, Timer, ChevronUp, Lock } from 'lucide-react';
+import { Clock, Trophy, Users, Target, Hash, Timer, ChevronUp, Lock, UserRound, Waves } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/hooks/useAuth';
 
