@@ -411,10 +411,17 @@ const SwimmingSchedule = () => {
     }
     
     return filtered;
-  }, [groups, config, filters, actualTimes, getActualTime]);
+  }, [groups, config, filters, actualTimes, getActualTime, players, shouldAutoFocusCurrent]);
 
   // 計算當前比賽組別和準備檢錄組別
   const { currentGroup, inspectionGroup } = useMemo(() => {
+    if (!shouldAutoFocusCurrent) {
+      return {
+        currentGroup: null,
+        inspectionGroup: null,
+      };
+    }
+
     const now = new Date();
     const currentIdx = findCurrentEventIndex(processedGroups, now);
     
