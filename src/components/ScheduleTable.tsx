@@ -12,9 +12,10 @@ import { useAuth } from '@/hooks/useAuth';
 interface ScheduleTableProps {
   groups: SwimGroup[];
   onActualEndChange: (groupIndex: number, time: string) => void;
+  unitFilter?: string;
 }
 
-export const ScheduleTable = ({ groups, onActualEndChange }: ScheduleTableProps) => {
+export const ScheduleTable = ({ groups, onActualEndChange, unitFilter }: ScheduleTableProps) => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showBackToTop, setShowBackToTop] = useState(false);
   const isMobile = useIsMobile();
@@ -128,27 +129,40 @@ export const ScheduleTable = ({ groups, onActualEndChange }: ScheduleTableProps)
                     </div>
 
                     {/* Event details */}
-                    <div className="space-y-1.5 text-base">
-                      <div className="flex items-center gap-1.5">
-                        <Users className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-muted-foreground">年齡組:</span>
-                        <span className="font-medium">{group.ageGroup || '-'}</span>
+                    <div className="flex gap-4">
+                      <div className="space-y-1.5 text-base flex-1">
+                        <div className="flex items-center gap-1.5">
+                          <Users className="w-4 h-4 text-muted-foreground" />
+                          <span className="text-muted-foreground">年齡組:</span>
+                          <span className="font-medium">{group.ageGroup || '-'}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <UserRound className="w-4 h-4 text-muted-foreground" />
+                          <span className="text-muted-foreground">性別:</span>
+                          <span className={`px-2 py-0.5 rounded-full text-sm font-medium
+                            ${group.gender === '男' ? 'bg-primary/10 text-primary' : 
+                              group.gender === '女' ? 'bg-destructive/10 text-destructive' : 
+                              'bg-muted text-muted-foreground'}`}>
+                            {group.gender || '-'}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <Waves className="w-4 h-4 text-muted-foreground" />
+                          <span className="text-muted-foreground">項目:</span>
+                          <span className="font-medium">{group.eventType || '-'}</span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-1.5">
-                        <UserRound className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-muted-foreground">性別:</span>
-                        <span className={`px-2 py-0.5 rounded-full text-sm font-medium
-                          ${group.gender === '男' ? 'bg-primary/10 text-primary' : 
-                            group.gender === '女' ? 'bg-destructive/10 text-destructive' : 
-                            'bg-muted text-muted-foreground'}`}>
-                          {group.gender || '-'}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <Waves className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-muted-foreground">項目:</span>
-                        <span className="font-medium">{group.eventType || '-'}</span>
-                      </div>
+                      {unitFilter && unitFilter !== 'all' && group.playerData && (() => {
+                        const filtered = group.playerData.filter(p => p.unit === unitFilter);
+                        return filtered.length > 0 ? (
+                          <div className="flex-1 space-y-1">
+                            <div className="text-xs text-muted-foreground font-medium mb-1">選手</div>
+                            {filtered.map((p, i) => (
+                              <div key={i} className="text-sm text-foreground">{p.name}</div>
+                            ))}
+                          </div>
+                        ) : null;
+                      })()}
                     </div>
 
                     {/* Times */}
