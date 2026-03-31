@@ -921,6 +921,14 @@ const SwimmingSchedule = () => {
             </div>
             
             <div className="flex flex-wrap justify-center gap-3">
+              <Button
+                variant={!filters.daySelect ? "default" : "outline"}
+                size="lg"
+                onClick={() => setFilters(prev => ({ ...prev, daySelect: '' }))}
+                className="min-w-24 transition-all duration-200 hover:scale-105"
+              >
+                全部
+              </Button>
               {filterOptions.days.map((day) => (
                 <Button
                   key={day.key}
