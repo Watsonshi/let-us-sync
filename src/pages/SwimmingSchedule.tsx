@@ -395,8 +395,8 @@ const SwimmingSchedule = () => {
       });
     }
     
-    // 自動隱藏已完賽組別，只保留當前比賽組別前15項
-    if (filtered.length > 15) {
+    // 只在實際比賽當天且選到當天賽程時，才自動聚焦目前進度附近的組別
+    if (shouldAutoFocusCurrent && filtered.length > 15) {
       const now = new Date();
       const currentGroupIndex = findCurrentEventIndex(filtered, now);
       
