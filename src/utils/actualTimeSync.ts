@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 // 管理實際結束時間的資料庫同步
 
 import { supabase } from '@/integrations/supabase/client';
@@ -41,13 +42,13 @@ export const saveActualTimeToDb = async (
       );
 
     if (error) {
-      console.error('儲存實際時間到資料庫失敗:', error);
+      logger.error('儲存實際時間到資料庫失敗:', error);
       return { success: false, error: error.message };
     }
 
     return { success: true };
   } catch (error) {
-    console.error('儲存實際時間失敗:', error);
+    logger.error('儲存實際時間失敗:', error);
     return { success: false, error: error instanceof Error ? error.message : '未知錯誤' };
   }
 };
@@ -67,13 +68,13 @@ export const removeActualTimeFromDb = async (
       .eq('heat_num', heatNum);
 
     if (error) {
-      console.error('刪除實際時間失敗:', error);
+      logger.error('刪除實際時間失敗:', error);
       return { success: false, error: error.message };
     }
 
     return { success: true };
   } catch (error) {
-    console.error('刪除實際時間失敗:', error);
+    logger.error('刪除實際時間失敗:', error);
     return { success: false, error: error instanceof Error ? error.message : '未知錯誤' };
   }
 };
@@ -91,7 +92,7 @@ export const loadAllActualTimesFromDb = async (): Promise<{
       .select('*');
 
     if (error) {
-      console.error('讀取實際時間失敗:', error);
+      logger.error('讀取實際時間失敗:', error);
       return { data: new Map(), error: error.message };
     }
 
@@ -105,7 +106,7 @@ export const loadAllActualTimesFromDb = async (): Promise<{
 
     return { data: timeMap };
   } catch (error) {
-    console.error('讀取實際時間失敗:', error);
+    logger.error('讀取實際時間失敗:', error);
     return { data: new Map(), error: error instanceof Error ? error.message : '未知錯誤' };
   }
 };
@@ -124,13 +125,13 @@ export const clearAllActualTimesFromDb = async (): Promise<{
       .neq('id', '00000000-0000-0000-0000-000000000000'); // 刪除所有記錄
 
     if (error) {
-      console.error('清除所有實際時間失敗:', error);
+      logger.error('清除所有實際時間失敗:', error);
       return { success: false, error: error.message };
     }
 
     return { success: true };
   } catch (error) {
-    console.error('清除所有實際時間失敗:', error);
+    logger.error('清除所有實際時間失敗:', error);
     return { success: false, error: error instanceof Error ? error.message : '未知錯誤' };
   }
 };
@@ -145,13 +146,13 @@ export const getActualTimeCountFromDb = async (): Promise<number> => {
       .select('*', { count: 'exact', head: true });
 
     if (error) {
-      console.error('讀取實際時間數量失敗:', error);
+      logger.error('讀取實際時間數量失敗:', error);
       return 0;
     }
 
     return count ?? 0;
   } catch (error) {
-    console.error('讀取實際時間數量失敗:', error);
+    logger.error('讀取實際時間數量失敗:', error);
     return 0;
   }
 };
