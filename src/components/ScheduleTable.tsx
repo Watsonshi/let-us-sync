@@ -129,12 +129,12 @@ export const ScheduleTable = ({ groups, onActualEndChange, unitFilter }: Schedul
                     </div>
 
                     {/* Event details */}
-                    <div className="flex gap-4">
-                      <div className="space-y-1.5 text-base flex-1">
+                    <div className="flex gap-3">
+                      <div className="space-y-1.5 text-base flex-[3] min-w-0">
                         <div className="flex items-center gap-1.5">
                           <Users className="w-4 h-4 text-muted-foreground" />
                           <span className="text-muted-foreground">年齡組:</span>
-                          <span className="font-medium">{group.ageGroup || '-'}</span>
+                          <span className="font-medium whitespace-nowrap">{group.ageGroup || '-'}</span>
                         </div>
                         <div className="flex items-center gap-1.5">
                           <UserRound className="w-4 h-4 text-muted-foreground" />
@@ -155,7 +155,7 @@ export const ScheduleTable = ({ groups, onActualEndChange, unitFilter }: Schedul
                       {unitFilter && unitFilter !== 'all' && group.playerData && (() => {
                         const filtered = group.playerData.filter(p => p.unit === unitFilter);
                         return filtered.length > 0 ? (
-                          <div className="flex-1 space-y-1">
+                          <div className="flex-[2] space-y-1">
                             <div className="text-xs text-muted-foreground font-medium mb-1">選手</div>
                             {filtered.map((p, i) => (
                               <div key={i} className="text-sm text-foreground">{p.name}</div>
