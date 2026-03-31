@@ -190,71 +190,103 @@ export const parseNewFormatExcel = async (file: File, fallback: number): Promise
   
   console.log(`新格式解析 - 共解析 ${allPlayers.length} 筆選手資料`);
   
-  // 按 項次 + 年齡組 + 性別 分組，計算組次
-  const groupKey = (p: RawPlayer) => `${p.eventNo}|${p.ageGroup}|${p.gender}`;
-  const playersByGroup = new Map<string, RawPlayer[]>();
+  // 檢查是否有預分配的組次資訊
+  const hasPreassignedHeats = allPlayers.some(p => p.heatNum !== undefined);
   
-  for (const player of allPlayers) {
-    const key = groupKey(player);
-    if (!playersByGroup.has(key)) {
-      playersByGroup.set(key, []);
-    }
-    playersByGroup.get(key)!.push(player);
-  }
-  
-  // 為每個分組計算組次
   const swimGroups: SwimGroup[] = [];
-  const LANES_PER_HEAT = 8; // 每組 8 條泳道
   
-  for (const [key, players] of playersByGroup) {
-    // 按報名成績排序（快→慢，無成績排最後）
-    players.sort((a, b) => {
-      if (a.timeSec === null && b.timeSec === null) return 0;
-      if (a.timeSec === null) return 1;
-      if (b.timeSec === null) return -1;
-      return a.timeSec - b.timeSec;
-    });
+  if (hasPreassignedHeats) {
+    // 使用 Excel 中的組次分組（項次 + 組別 + 組次）
+    console.log('新格式解析 - 使用預分配組次');
+    const heatKey = (p: RawPlayer) => `${p.eventNo}|${p.ageGroup}|${p.gender}|${p.heatNum}`;
+    const playersByHeat = new Map<string, RawPlayer[]>();
     
-    // 計算需要幾組
-    const totalHeats = Math.ceil(players.length / LANES_PER_HEAT);
+    for (const player of allPlayers) {
+      const key = heatKey(player);
+      if (!playersByHeat.has(key)) playersByHeat.set(key, []);
+      playersByHeat.get(key)!.push(player);
+    }
     
-    // 分配到各組
-    for (let heatNum = 1; heatNum <= totalHeats; heatNum++) {
-      const startIdx = (heatNum - 1) * LANES_PER_HEAT;
-      const endIdx = Math.min(startIdx + LANES_PER_HEAT, players.length);
-      const heatPlayers = players.slice(startIdx, endIdx);
-      
+    for (const [, heatPlayers] of playersByHeat) {
       if (heatPlayers.length === 0) continue;
-      
-      const firstPlayer = heatPlayers[0];
-      const times = heatPlayers
-        .map(p => p.timeSec)
-        .filter((t): t is number => t !== null);
-      
-      // 使用該組最慢成績作為預估時間
+      const first = heatPlayers[0];
+      const times = heatPlayers.map(p => p.timeSec).filter((t): t is number => t !== null);
       const avgSeconds = times.length > 0 ? Math.max(...times) : fallback;
       
-      const group: SwimGroup = {
-        eventNo: firstPlayer.eventNo,
-        heatNum,
-        heatTotal: totalHeats,
-        ageGroup: firstPlayer.ageGroup,
-        gender: firstPlayer.gender,
-        eventType: firstPlayer.eventType,
+      swimGroups.push({
+        eventNo: first.eventNo,
+        heatNum: first.heatNum ?? 1,
+        heatTotal: first.heatTotal ?? 1,
+        ageGroup: first.ageGroup,
+        gender: first.gender,
+        eventType: first.eventType,
         times,
         avgSeconds,
-        dayKey: dayKeyOfEvent(firstPlayer.eventNo),
-        dayLabel: dayLabelOfKey(dayKeyOfEvent(firstPlayer.eventNo)),
-        playerNames: heatPlayers.map(p => p.playerName),
+        dayKey: dayKeyOfEvent(first.eventNo),
+        dayLabel: dayLabelOfKey(dayKeyOfEvent(first.eventNo)),
+        playerNames: heatPlayers.map(p => p.playerName).filter(Boolean),
         playerData: heatPlayers.map(p => ({
           name: p.playerName,
           unit: p.unit,
           time: p.timeSec,
           timeStr: p.timeStr,
         })),
-      };
+      });
+    }
+  } else {
+    // 無組次欄位，自動計算分組
+    console.log('新格式解析 - 自動計算組次');
+    const groupKey = (p: RawPlayer) => `${p.eventNo}|${p.ageGroup}|${p.gender}`;
+    const playersByGroup = new Map<string, RawPlayer[]>();
+    
+    for (const player of allPlayers) {
+      const key = groupKey(player);
+      if (!playersByGroup.has(key)) playersByGroup.set(key, []);
+      playersByGroup.get(key)!.push(player);
+    }
+    
+    const LANES_PER_HEAT = 8;
+    
+    for (const [, players] of playersByGroup) {
+      players.sort((a, b) => {
+        if (a.timeSec === null && b.timeSec === null) return 0;
+        if (a.timeSec === null) return 1;
+        if (b.timeSec === null) return -1;
+        return a.timeSec - b.timeSec;
+      });
       
-      swimGroups.push(group);
+      const totalHeats = Math.ceil(players.length / LANES_PER_HEAT);
+      
+      for (let heatNum = 1; heatNum <= totalHeats; heatNum++) {
+        const startIdx = (heatNum - 1) * LANES_PER_HEAT;
+        const endIdx = Math.min(startIdx + LANES_PER_HEAT, players.length);
+        const heatPlayers = players.slice(startIdx, endIdx);
+        if (heatPlayers.length === 0) continue;
+        
+        const first = heatPlayers[0];
+        const times = heatPlayers.map(p => p.timeSec).filter((t): t is number => t !== null);
+        const avgSeconds = times.length > 0 ? Math.max(...times) : fallback;
+        
+        swimGroups.push({
+          eventNo: first.eventNo,
+          heatNum,
+          heatTotal: totalHeats,
+          ageGroup: first.ageGroup,
+          gender: first.gender,
+          eventType: first.eventType,
+          times,
+          avgSeconds,
+          dayKey: dayKeyOfEvent(first.eventNo),
+          dayLabel: dayLabelOfKey(dayKeyOfEvent(first.eventNo)),
+          playerNames: heatPlayers.map(p => p.playerName),
+          playerData: heatPlayers.map(p => ({
+            name: p.playerName,
+            unit: p.unit,
+            time: p.timeSec,
+            timeStr: p.timeStr,
+          })),
+        });
+      }
     }
   }
   
