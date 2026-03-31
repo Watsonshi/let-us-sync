@@ -1,10 +1,13 @@
+import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScheduleConfig, FilterOptions } from '@/types/swimming';
-import { RotateCcw, Eraser } from 'lucide-react';
+import { RotateCcw, Eraser, ChevronDown, ChevronUp, SlidersHorizontal } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 interface ControlPanelProps {
   config: ScheduleConfig;
@@ -12,12 +15,12 @@ interface ControlPanelProps {
   ageGroups: string[];
   genders: string[];
   eventTypes: string[];
-  units: string[]; // 新增:參賽單位列表
-  players: string[]; // 新增:選手名單
+  units: string[];
+  players: string[];
   onConfigChange: (config: ScheduleConfig) => void;
   onFilterChange: (filters: FilterOptions) => void;
-  onClearActualTimes?: () => void; // 新增:清除實際時間的回調
-  actualTimeCount?: number; // 新增:實際時間記錄數量
+  onClearActualTimes?: () => void;
+  actualTimeCount?: number;
 }
 
 export const ControlPanel = ({
@@ -26,180 +29,203 @@ export const ControlPanel = ({
   ageGroups,
   genders,
   eventTypes,
-  units, // 新增:參賽單位列表
-  players, // 新增:選手名單
+  units,
+  players,
   onConfigChange,
   onFilterChange,
-  onClearActualTimes, // 新增:清除實際時間
-  actualTimeCount = 0, // 新增:實際時間記錄數量
+  onClearActualTimes,
+  actualTimeCount = 0,
 }: ControlPanelProps) => {
+  const isMobile = useIsMobile();
+  const [isOpen, setIsOpen] = useState(!isMobile);
+
   const resetFilters = () => {
     onFilterChange({
       daySelect: 'all',
       ageGroupSelect: 'all',
       genderSelect: 'all',
       eventTypeSelect: 'all',
-      unitSelect: 'all', // 新增：參賽單位重置
+      unitSelect: 'all',
       playerSelect: 'all',
-      playerSearch: '', // 重置搜尋框
+      playerSearch: '',
     });
   };
 
+  const activeFilterCount = [
+    filters.ageGroupSelect !== 'all' && filters.ageGroupSelect,
+    filters.genderSelect !== 'all' && filters.genderSelect,
+    filters.eventTypeSelect !== 'all' && filters.eventTypeSelect,
+    filters.unitSelect !== 'all' && filters.unitSelect,
+    filters.playerSelect !== 'all' && filters.playerSelect,
+    filters.playerSearch?.trim(),
+  ].filter(Boolean).length;
+
+  const filterContent = (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="space-y-1.5">
+        <Label className="text-xs font-medium text-muted-foreground">年齡組</Label>
+        <Select 
+          value={filters.ageGroupSelect} 
+          onValueChange={(value) => onFilterChange({ ...filters, ageGroupSelect: value })}
+        >
+          <SelectTrigger className="h-9">
+            <SelectValue placeholder="全部年齡組" />
+          </SelectTrigger>
+          <SelectContent className="bg-background border border-border shadow-lg z-50">
+            <SelectItem value="all">全部年齡組</SelectItem>
+            {ageGroups.map((age) => (
+              <SelectItem key={age} value={age}>{age}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-1.5">
+        <Label className="text-xs font-medium text-muted-foreground">性別</Label>
+        <Select 
+          value={filters.genderSelect} 
+          onValueChange={(value) => onFilterChange({ ...filters, genderSelect: value })}
+        >
+          <SelectTrigger className="h-9">
+            <SelectValue placeholder="全部性別" />
+          </SelectTrigger>
+          <SelectContent className="bg-background border border-border shadow-lg z-50">
+            <SelectItem value="all">全部性別</SelectItem>
+            {genders.map((gender) => (
+              <SelectItem key={gender} value={gender}>{gender}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-1.5">
+        <Label className="text-xs font-medium text-muted-foreground">比賽項目</Label>
+        <Select 
+          value={filters.eventTypeSelect} 
+          onValueChange={(value) => onFilterChange({ ...filters, eventTypeSelect: value })}
+        >
+          <SelectTrigger className="h-9">
+            <SelectValue placeholder="全部項目" />
+          </SelectTrigger>
+          <SelectContent className="bg-background border border-border shadow-lg z-50">
+            <SelectItem value="all">全部項目</SelectItem>
+            {eventTypes.map((eventType) => (
+              <SelectItem key={eventType} value={eventType}>{eventType}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-1.5">
+        <Label className="text-xs font-medium text-muted-foreground">參賽單位</Label>
+        <Select 
+          value={filters.unitSelect} 
+          onValueChange={(value) => onFilterChange({ ...filters, unitSelect: value })}
+        >
+          <SelectTrigger className="h-9">
+            <SelectValue placeholder="全部單位" />
+          </SelectTrigger>
+          <SelectContent className="bg-background border border-border shadow-lg z-50 max-h-60 overflow-y-auto">
+            <SelectItem value="all">全部單位</SelectItem>
+            {units.map((unit) => (
+              <SelectItem key={unit} value={unit}>{unit}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-1.5">
+        <Label className="text-xs font-medium text-muted-foreground">選手名單</Label>
+        <Select 
+          value={filters.playerSelect} 
+          onValueChange={(value) => onFilterChange({ ...filters, playerSelect: value })}
+        >
+          <SelectTrigger className="h-9">
+            <SelectValue placeholder="全部選手" />
+          </SelectTrigger>
+          <SelectContent className="bg-background border border-border shadow-lg z-50 max-h-60 overflow-y-auto">
+            <SelectItem value="all" className="text-base">全部選手</SelectItem>
+            {players.map((player) => (
+              <SelectItem key={player} value={player} className="text-base">{player}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-1.5">
+        <Label htmlFor="playerSearch" className="text-xs font-medium text-muted-foreground">選手搜尋</Label>
+        <Input
+          id="playerSearch"
+          type="text"
+          placeholder="輸入選手姓名"
+          value={filters.playerSearch}
+          onChange={(e) => onFilterChange({ ...filters, playerSearch: e.target.value })}
+          className="h-9"
+        />
+      </div>
+    </div>
+  );
+
   return (
-    <Card className="shadow-custom-md">
-      <CardContent className="p-6">
-        <div className="flex flex-col gap-4">
+    <Card className="shadow-custom-md overflow-hidden">
+      <CardContent className="p-4 md:p-6">
+        <div className="flex flex-col gap-3">
+          {/* Header */}
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">賽程設定與篩選</h3>
             <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={resetFilters}
-                className="flex items-center gap-2"
-              >
-                <RotateCcw className="w-4 h-4" />
-                重置篩選
-              </Button>
+              <SlidersHorizontal className="w-4 h-4 text-primary" />
+              <h3 className="text-base font-semibold">篩選條件</h3>
+              {activeFilterCount > 0 && (
+                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs font-bold">
+                  {activeFilterCount}
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              {activeFilterCount > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={resetFilters}
+                  className="h-8 px-2 text-xs"
+                >
+                  <RotateCcw className="w-3.5 h-3.5 mr-1" />
+                  重置
+                </Button>
+              )}
               {onClearActualTimes && actualTimeCount > 0 && (
                 <Button
                   variant="destructive"
                   size="sm"
                   onClick={onClearActualTimes}
-                  className="flex items-center gap-2"
-                  title="清除所有手動設定的實際結束時間"
+                  className="h-8 px-2 text-xs"
                 >
-                  <Eraser className="w-4 h-4" />
+                  <Eraser className="w-3.5 h-3.5 mr-1" />
                   清除時間 ({actualTimeCount})
                 </Button>
               )}
             </div>
           </div>
 
-          {/* 篩選器 */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">天數篩選</Label>
-            <Select 
-              value={filters.daySelect} 
-              onValueChange={(value) => onFilterChange({ ...filters, daySelect: value })}
-            >
-              <SelectTrigger className="h-9">
-                <SelectValue placeholder="全部" />
-              </SelectTrigger>
-              <SelectContent className="bg-background border border-border shadow-lg z-50">
-                <SelectItem value="all">全部</SelectItem>
-                <SelectItem value="d1">第一天（115/4/2，三：1–8）</SelectItem>
-                <SelectItem value="d2">第二天（115/4/3，四：9–26）</SelectItem>
-                <SelectItem value="d3">第三天（115/4/4，五：27–50）</SelectItem>
-                <SelectItem value="d4">第四天（115/4/5，六：51–74）</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">年齡組篩選</Label>
-            <Select 
-              value={filters.ageGroupSelect} 
-              onValueChange={(value) => onFilterChange({ ...filters, ageGroupSelect: value })}
-            >
-              <SelectTrigger className="h-9">
-                <SelectValue placeholder="全部年齡組" />
-              </SelectTrigger>
-              <SelectContent className="bg-background border border-border shadow-lg z-50">
-                <SelectItem value="all">全部年齡組</SelectItem>
-                {ageGroups.map((age) => (
-                  <SelectItem key={age} value={age}>{age}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">性別篩選</Label>
-            <Select 
-              value={filters.genderSelect} 
-              onValueChange={(value) => onFilterChange({ ...filters, genderSelect: value })}
-            >
-              <SelectTrigger className="h-9">
-                <SelectValue placeholder="全部性別" />
-              </SelectTrigger>
-              <SelectContent className="bg-background border border-border shadow-lg z-50">
-                <SelectItem value="all">全部性別</SelectItem>
-                {genders.map((gender) => (
-                  <SelectItem key={gender} value={gender}>{gender}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">比賽項目篩選</Label>
-            <Select 
-              value={filters.eventTypeSelect} 
-              onValueChange={(value) => onFilterChange({ ...filters, eventTypeSelect: value })}
-            >
-              <SelectTrigger className="h-9">
-                <SelectValue placeholder="全部項目" />
-              </SelectTrigger>
-              <SelectContent className="bg-background border border-border shadow-lg z-50">
-                <SelectItem value="all">全部項目</SelectItem>
-                {eventTypes.map((eventType) => (
-                  <SelectItem key={eventType} value={eventType}>{eventType}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">參賽單位篩選</Label>
-            <Select 
-              value={filters.unitSelect} 
-              onValueChange={(value) => onFilterChange({ ...filters, unitSelect: value })}
-            >
-              <SelectTrigger className="h-9">
-                <SelectValue placeholder="全部單位" />
-              </SelectTrigger>
-              <SelectContent className="bg-background border border-border shadow-lg z-50 max-h-60 overflow-y-auto">
-                <SelectItem value="all">全部單位</SelectItem>
-                {units.map((unit) => (
-                  <SelectItem key={unit} value={unit}>{unit}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">選手名單篩選</Label>
-            <Select 
-              value={filters.playerSelect} 
-              onValueChange={(value) => onFilterChange({ ...filters, playerSelect: value })}
-            >
-              <SelectTrigger className="h-9">
-                <SelectValue placeholder="全部選手" />
-              </SelectTrigger>
-              <SelectContent className="bg-background border border-border shadow-lg z-50 max-h-60 overflow-y-auto">
-                <SelectItem value="all" className="text-base">全部選手</SelectItem>
-                {players.map((player) => (
-                  <SelectItem key={player} value={player} className="text-base">{player}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="playerSearch" className="text-sm font-medium">選手名稱搜尋</Label>
-            <Input
-              id="playerSearch"
-              type="text"
-              placeholder="輸入選手姓名"
-              value={filters.playerSearch}
-              onChange={(e) => onFilterChange({ ...filters, playerSearch: e.target.value })}
-              className="h-9"
-            />
-          </div>
-          </div>
+          {/* Filters - collapsible on mobile */}
+          {isMobile ? (
+            <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+              <CollapsibleTrigger asChild>
+                <Button variant="outline" size="sm" className="w-full justify-between h-9">
+                  <span className="text-sm">
+                    {isOpen ? '收合篩選' : '展開篩選'}
+                    {activeFilterCount > 0 && !isOpen && ` (${activeFilterCount} 個啟用)`}
+                  </span>
+                  {isOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="pt-3">
+                {filterContent}
+              </CollapsibleContent>
+            </Collapsible>
+          ) : (
+            filterContent
+          )}
         </div>
       </CardContent>
     </Card>
