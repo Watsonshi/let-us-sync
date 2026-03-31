@@ -119,13 +119,15 @@ export const parseNewFormatExcel = async (file: File, fallback: number): Promise
   const colIndex = {
     playerName: headerCols.indexOf('選手姓名'),
     eventNo: headerCols.indexOf('項次'),
+    heatStr: headerCols.indexOf('組次'),
     eventType: headerCols.indexOf('比賽項目'),
     groupCategory: headerCols.indexOf('組別'),
     unit: headerCols.indexOf('單位'),
     timeStr: headerCols.indexOf('報名成績'),
   };
   
-  console.log('新格式解析 - 欄位索引:', colIndex);
+  const hasHeatColumn = colIndex.heatStr !== -1;
+  console.log('新格式解析 - 欄位索引:', colIndex, '有組次欄位:', hasHeatColumn);
   
   // 解析所有選手資料
   const allPlayers: RawPlayer[] = [];
@@ -140,14 +142,26 @@ export const parseNewFormatExcel = async (file: File, fallback: number): Promise
     const groupCategory = String(row[colIndex.groupCategory] ?? '').trim();
     const unit = String(row[colIndex.unit] ?? '').trim();
     const timeStr = String(row[colIndex.timeStr] ?? '').trim();
+    const heatRaw = hasHeatColumn ? String(row[colIndex.heatStr] ?? '').trim() : '';
     
-    // 跳過空行
-    if (!playerName && !eventNoRaw) continue;
+    // 跳過空行（接力賽可能沒有選手姓名，但有項次）
+    if (!eventNoRaw) continue;
     
     const eventNo = parseInt(eventNoRaw, 10);
     if (isNaN(eventNo)) continue;
     
     const { ageGroup, gender } = splitAgeGenderGroup(groupCategory);
+    
+    // 解析組次
+    let heatNum: number | undefined;
+    let heatTotal: number | undefined;
+    if (heatRaw) {
+      const parsed = parseHeatStr(heatRaw);
+      if (parsed) {
+        heatNum = parsed.heatNum;
+        heatTotal = parsed.heatTotal;
+      }
+    }
     
     // 解析報名成績（處理 99:99.99、40:39.99 等無效值）
     let timeSec: number | null = null;
@@ -169,6 +183,8 @@ export const parseNewFormatExcel = async (file: File, fallback: number): Promise
       unit,
       timeStr,
       timeSec,
+      heatNum,
+      heatTotal,
     });
   }
   
