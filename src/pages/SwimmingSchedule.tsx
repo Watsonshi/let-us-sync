@@ -18,6 +18,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useActualTimeSync } from '@/hooks/useActualTimeSync';
 import { useRaceSyncStatus } from '@/hooks/useRaceSyncStatus';
+import { ScheduleSkeleton } from '@/components/ScheduleSkeleton';
+import { EmptyState } from '@/components/EmptyState';
 const SwimmingSchedule = () => {
   const navigate = useNavigate();
   const { user, isAdmin, loading: authLoading, signOut } = useAuth();
