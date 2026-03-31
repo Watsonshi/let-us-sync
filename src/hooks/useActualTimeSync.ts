@@ -56,7 +56,7 @@ export function useActualTimeSync(): UseActualTimeSyncResult {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'actual_times' },
         (payload: RealtimePostgresChangesPayload<ActualTimeRecord>) => {
-          console.log('Realtime 更新:', payload);
+          logger.log('Realtime 更新:', payload);
           
           if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
             const record = payload.new as ActualTimeRecord;

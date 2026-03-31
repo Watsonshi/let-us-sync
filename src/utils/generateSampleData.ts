@@ -38,12 +38,12 @@ export const generateSampleDataFromExcel = async () => {
       }
     });
     
-    console.log('生成的資料筆數:', rawData.length);
-    console.log('項次範圍:', Math.min(...rawData.map(d => d.項次)), '-', Math.max(...rawData.map(d => d.項次)));
+    logger.log('生成的資料筆數:', rawData.length);
+    logger.log('項次範圍:', Math.min(...rawData.map(d => d.項次)), '-', Math.max(...rawData.map(d => d.項次)));
     
     return rawData;
   } catch (error) {
-    console.error('生成範例資料失敗:', error);
+    logger.error('生成範例資料失敗:', error);
     throw error;
   }
 };

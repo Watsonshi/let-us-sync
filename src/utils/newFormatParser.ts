@@ -83,13 +83,13 @@ export const parseNewFormatExcel = async (file: File, fallback: number): Promise
   const buf = await file.arrayBuffer();
   const wb = XLSX.read(buf, { type: 'array' });
   
-  console.log('新格式解析 - 工作表列表:', wb.SheetNames);
+  logger.log('新格式解析 - 工作表列表:', wb.SheetNames);
   
   // 優先使用 "All" 或第一個工作表
   const sheetName = wb.SheetNames.includes('All') ? 'All' : wb.SheetNames.includes('賽程資料') ? '賽程資料' : wb.SheetNames[0];
   const ws = wb.Sheets[sheetName];
   
-  console.log('新格式解析 - 使用工作表:', sheetName);
+  logger.log('新格式解析 - 使用工作表:', sheetName);
   
   // 轉換為 2D 陣列
   const rows2D = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' }) as any[][];
@@ -107,7 +107,7 @@ export const parseNewFormatExcel = async (file: File, fallback: number): Promise
     if (hit >= 4) {
       headerIdx = i;
       headerCols = cols;
-      console.log(`新格式解析 - 在第 ${i} 列找到標題:`, cols);
+      logger.log(`新格式解析 - 在第 ${i} 列找到標題:`, cols);
       break;
     }
   }
@@ -128,7 +128,7 @@ export const parseNewFormatExcel = async (file: File, fallback: number): Promise
   };
   
   const hasHeatColumn = colIndex.heatStr !== -1;
-  console.log('新格式解析 - 欄位索引:', colIndex, '有組次欄位:', hasHeatColumn);
+  logger.log('新格式解析 - 欄位索引:', colIndex, '有組次欄位:', hasHeatColumn);
   
   // 解析所有選手資料
   const allPlayers: RawPlayer[] = [];
@@ -189,7 +189,7 @@ export const parseNewFormatExcel = async (file: File, fallback: number): Promise
     });
   }
   
-  console.log(`新格式解析 - 共解析 ${allPlayers.length} 筆選手資料`);
+  logger.log(`新格式解析 - 共解析 ${allPlayers.length} 筆選手資料`);
   
   // 檢查是否有預分配的組次資訊
   const hasPreassignedHeats = allPlayers.some(p => p.heatNum !== undefined);
@@ -198,7 +198,7 @@ export const parseNewFormatExcel = async (file: File, fallback: number): Promise
   
   if (hasPreassignedHeats) {
     // 使用 Excel 中的組次分組（項次 + 組別 + 組次）
-    console.log('新格式解析 - 使用預分配組次');
+    logger.log('新格式解析 - 使用預分配組次');
     const heatKey = (p: RawPlayer) => `${p.eventNo}|${p.ageGroup}|${p.gender}|${p.heatNum}`;
     const playersByHeat = new Map<string, RawPlayer[]>();
     
@@ -236,7 +236,7 @@ export const parseNewFormatExcel = async (file: File, fallback: number): Promise
     }
   } else {
     // 無組次欄位，自動計算分組
-    console.log('新格式解析 - 自動計算組次');
+    logger.log('新格式解析 - 自動計算組次');
     const groupKey = (p: RawPlayer) => `${p.eventNo}|${p.ageGroup}|${p.gender}`;
     const playersByGroup = new Map<string, RawPlayer[]>();
     
@@ -308,7 +308,7 @@ export const parseNewFormatExcel = async (file: File, fallback: number): Promise
   // 排序
   swimGroups.sort((a, b) => a.eventNo - b.eventNo || a.heatNum - b.heatNum);
   
-  console.log(`新格式解析 - 共產生 ${swimGroups.length} 組比賽`);
+  logger.log(`新格式解析 - 共產生 ${swimGroups.length} 組比賽`);
   
   return swimGroups;
 };

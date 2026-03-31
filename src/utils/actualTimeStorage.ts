@@ -30,7 +30,7 @@ export const removeActualTime = (eventNo: number, heatNum: number): void => {
     delete records[key];
     localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
   } catch (error) {
-    console.error('刪除實際時間失敗:', error);
+    logger.error('刪除實際時間失敗:', error);
   }
 };
 
@@ -44,7 +44,7 @@ export const loadActualTime = (eventNo: number, heatNum: number): Date | null =>
     const timeStr = records[key];
     return timeStr ? new Date(timeStr) : null;
   } catch (error) {
-    console.error('讀取實際時間失敗:', error);
+    logger.error('讀取實際時間失敗:', error);
     return null;
   }
 };
@@ -57,7 +57,7 @@ export const loadAllActualTimes = (): ActualTimeRecord => {
     const stored = localStorage.getItem(STORAGE_KEY);
     return stored ? JSON.parse(stored) : {};
   } catch (error) {
-    console.error('讀取所有實際時間失敗:', error);
+    logger.error('讀取所有實際時間失敗:', error);
     return {};
   }
 };
@@ -69,7 +69,7 @@ export const clearAllActualTimes = (): void => {
   try {
     localStorage.removeItem(STORAGE_KEY);
   } catch (error) {
-    console.error('清除所有實際時間失敗:', error);
+    logger.error('清除所有實際時間失敗:', error);
   }
 };
 

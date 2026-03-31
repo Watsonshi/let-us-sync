@@ -32,7 +32,7 @@ export async function triggerRaceScrape(): Promise<ScrapeResult> {
     const { data, error } = await supabase.functions.invoke('scrape-race-info');
 
     if (error) {
-      console.error('Error invoking scrape-race-info:', error);
+      logger.error('Error invoking scrape-race-info:', error);
       return {
         success: false,
         error: error.message,
@@ -45,7 +45,7 @@ export async function triggerRaceScrape(): Promise<ScrapeResult> {
 
     return data as ScrapeResult;
   } catch (err) {
-    console.error('Error calling scrape-race-info:', err);
+    logger.error('Error calling scrape-race-info:', err);
     return {
       success: false,
       error: err instanceof Error ? err.message : 'Unknown error',
@@ -68,7 +68,7 @@ export async function getRaceSyncStatus(): Promise<RaceSyncStatus | null> {
     .maybeSingle();
 
   if (error) {
-    console.error('Error fetching race sync status:', error);
+    logger.error('Error fetching race sync status:', error);
     return null;
   }
 

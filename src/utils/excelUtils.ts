@@ -36,12 +36,12 @@ export const dayLabelOfKey = (k: string): string => {
 };
 
 export const findHeaderIdx2D = (rows2D: any[][]): number => {
-  console.log('正在搜尋標題列，資料前10列：', rows2D.slice(0, 10));
+  logger.log('正在搜尋標題列，資料前10列：', rows2D.slice(0, 10));
   
   const maxScan = Math.min(rows2D.length, 30);
   for (let i = 0; i < maxScan; i++) {
     const cols = rows2D[i].map(c => String(c ?? '').trim());
-    console.log(`第${i}列內容:`, cols);
+    logger.log(`第${i}列內容:`, cols);
     
     let hit = 0;
     const foundHeaders: string[] = [];
@@ -52,7 +52,7 @@ export const findHeaderIdx2D = (rows2D: any[][]): number => {
       }
     }
     
-    console.log(`第${i}列匹配到 ${hit} 個標題:`, foundHeaders);
+    logger.log(`第${i}列匹配到 ${hit} 個標題:`, foundHeaders);
     
     // 降低匹配要求，只要找到關鍵欄位即可
     const keyHeaders = ['項次', '組次', '年齡組', '性別', '比賽項目'];
@@ -62,12 +62,12 @@ export const findHeaderIdx2D = (rows2D: any[][]): number => {
     }
     
     if (keyHit >= 4) {
-      console.log(`在第${i}列找到標題列，關鍵欄位匹配: ${keyHit}/5`);
+      logger.log(`在第${i}列找到標題列，關鍵欄位匹配: ${keyHit}/5`);
       return i;
     }
   }
   
-  console.error('未找到標題列，所有欄位掃描結果已輸出至控制台');
+  logger.error('未找到標題列，所有欄位掃描結果已輸出至控制台');
   return -1;
 };
 
@@ -180,7 +180,7 @@ export const buildGroupsFromRows = (rows: Record<string, any>[], fallback: numbe
 };
 
 export const parseExcelFile = async (file: File, fallback: number): Promise<SwimGroup[]> => {
-  console.log('開始解析檔案:', file.name);
+  logger.log('開始解析檔案:', file.name);
   
   if (file.name.toLowerCase().endsWith('.csv')) {
     const text = await file.text();
@@ -192,41 +192,41 @@ export const parseExcelFile = async (file: File, fallback: number): Promise<Swim
   try {
     const buf = await file.arrayBuffer();
     const wb = XLSX.read(buf, { type: 'array' });
-    console.log('Excel工作表列表:', wb.SheetNames);
+    logger.log('Excel工作表列表:', wb.SheetNames);
     
     const sheetName = wb.SheetNames.includes('All') ? 'All' : wb.SheetNames.includes('賽程資料') ? '賽程資料' : wb.SheetNames[0];
     const ws = wb.Sheets[sheetName];
-    console.log('使用工作表:', sheetName);
+    logger.log('使用工作表:', sheetName);
     
     // 轉換為 2D 陣列以檢測格式
     const rows2D = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' }) as any[][];
-    console.log('2D陣列前5行:', rows2D.slice(0, 5));
+    logger.log('2D陣列前5行:', rows2D.slice(0, 5));
     
     // 檢查是否為新格式
     if (isNewFormatExcel(rows2D)) {
-      console.log('偵測到新格式 Excel，使用新格式解析器');
+      logger.log('偵測到新格式 Excel，使用新格式解析器');
       return parseNewFormatExcel(file, fallback);
     }
     
-    console.log('使用舊格式解析器');
+    logger.log('使用舊格式解析器');
     
     // 先嘗試直接解析
     let rows = XLSX.utils.sheet_to_json(ws, { defval: '' }) as Record<string, any>[];
-    console.log('直接解析結果，前5行:', rows.slice(0, 5));
+    logger.log('直接解析結果，前5行:', rows.slice(0, 5));
     
     // 檢查是否有正確的標題
     if (rows.length > 0 && rows[0] && '項次' in rows[0]) {
-      console.log('使用直接解析結果');
+      logger.log('使用直接解析結果');
       return buildGroupsFromRows(rows, fallback);
     }
     
     // 如果直接解析失敗，使用2D陣列方式
-    console.log('直接解析失敗，嘗試2D陣列解析');
+    logger.log('直接解析失敗，嘗試2D陣列解析');
     rows = rows2DToObjects(rows2D);
     return buildGroupsFromRows(rows, fallback);
     
   } catch (error) {
-    console.error('Excel解析失敗:', error);
+    logger.error('Excel解析失敗:', error);
     throw error;
   }
 };
