@@ -135,6 +135,7 @@ export const ScheduleTable = ({ groups, onActualEndChange }: ScheduleTableProps)
                         <span className="font-medium">{group.ageGroup || '-'}</span>
                       </div>
                       <div className="flex items-center gap-1.5">
+                        <UserRound className="w-4 h-4 text-muted-foreground" />
                         <span className="text-muted-foreground">性別:</span>
                         <span className={`px-2 py-0.5 rounded-full text-sm font-medium
                           ${group.gender === '男' ? 'bg-primary/10 text-primary' : 
@@ -144,6 +145,7 @@ export const ScheduleTable = ({ groups, onActualEndChange }: ScheduleTableProps)
                         </span>
                       </div>
                       <div className="flex items-center gap-1.5">
+                        <Waves className="w-4 h-4 text-muted-foreground" />
                         <span className="text-muted-foreground">項目:</span>
                         <span className="font-medium">{group.eventType || '-'}</span>
                       </div>
