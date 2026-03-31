@@ -155,7 +155,7 @@ export const ScheduleTable = ({ groups, onActualEndChange, unitFilter }: Schedul
                       {unitFilter && unitFilter !== 'all' && group.playerData && (() => {
                         const filtered = group.playerData.filter(p => p.unit === unitFilter);
                         return filtered.length > 0 ? (
-                          <div className="flex-1 space-y-1">
+                          <div className="flex-[2] space-y-1">
                             <div className="text-xs text-muted-foreground font-medium mb-1">選手</div>
                             {filtered.map((p, i) => (
                               <div key={i} className="text-sm text-foreground">{p.name}</div>
