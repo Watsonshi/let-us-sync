@@ -128,7 +128,7 @@ export const ScheduleTable = ({ groups, onActualEndChange }: ScheduleTableProps)
                     </div>
 
                     {/* Event details */}
-                    <div className="grid grid-cols-2 gap-3 text-base">
+                    <div className="space-y-1.5 text-base">
                       <div className="flex items-center gap-1.5">
                         <Users className="w-4 h-4 text-muted-foreground" />
                         <span className="text-muted-foreground">年齡組:</span>
@@ -143,11 +143,10 @@ export const ScheduleTable = ({ groups, onActualEndChange }: ScheduleTableProps)
                           {group.gender || '-'}
                         </span>
                       </div>
-                    </div>
-
-                    <div className="text-base">
-                      <span className="text-muted-foreground">項目:</span>
-                      <span className="font-medium ml-1.5">{group.eventType || '-'}</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-muted-foreground">項目:</span>
+                        <span className="font-medium">{group.eventType || '-'}</span>
+                      </div>
                     </div>
 
                     {/* Times */}
