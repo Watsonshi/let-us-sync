@@ -49,6 +49,18 @@ export const splitAgeGenderGroup = (groupStr: string): { ageGroup: string; gende
   return { ageGroup: groupStr, gender: '' };
 };
 
+/**
+ * 解析「第X/Y組」格式的組次字串
+ * 例如: "第1/5組" → { heatNum: 1, heatTotal: 5 }
+ */
+export const parseHeatStr = (heatStr: string): { heatNum: number; heatTotal: number } | null => {
+  const match = heatStr.match(/第(\d+)\/(\d+)組/);
+  if (match) {
+    return { heatNum: parseInt(match[1], 10), heatTotal: parseInt(match[2], 10) };
+  }
+  return null;
+};
+
 interface RawPlayer {
   playerName: string;
   eventNo: number;
@@ -59,6 +71,8 @@ interface RawPlayer {
   unit: string;
   timeStr: string;
   timeSec: number | null;
+  heatNum?: number;
+  heatTotal?: number;
 }
 
 /**
