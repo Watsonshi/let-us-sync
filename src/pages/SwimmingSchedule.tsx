@@ -945,7 +945,7 @@ const SwimmingSchedule = () => {
         )}
 
         {/* Current Race Card */}
-        {filters.daySelect && processedGroups.length > 0 && (
+        {processedGroups.length > 0 && (
           <CurrentRaceCard 
             currentGroup={currentGroup}
             inspectionGroup={inspectionGroup}
