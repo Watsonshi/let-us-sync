@@ -11,13 +11,15 @@ import { parseExcelFile, buildGroupsFromRows, dayKeyOfEvent, dayLabelOfKey, getT
 import { parseMmSs, parseTimeInputToDate, addSeconds, fmtHM } from '@/utils/timeUtils';
 import { findCurrentEventIndex } from '@/utils/currentEventDetection';
 import { parsePlayerCSV, getUniquePlayersFromCSV } from '@/utils/csvUtils';
-import { Waves, Timer, LogOut } from 'lucide-react';
+import { Waves, Timer, LogOut, Calendar, BarChart3 } from 'lucide-react';
 import HeroBanner from '@/components/HeroBanner';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useActualTimeSync } from '@/hooks/useActualTimeSync';
 import { useRaceSyncStatus } from '@/hooks/useRaceSyncStatus';
+import { ScheduleSkeleton } from '@/components/ScheduleSkeleton';
+import { EmptyState } from '@/components/EmptyState';
 const SwimmingSchedule = () => {
   const navigate = useNavigate();
   const { user, isAdmin, loading: authLoading, signOut } = useAuth();
@@ -818,7 +820,7 @@ const SwimmingSchedule = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+    <div className="min-h-screen bg-background">
       {/* Hero Banner */}
       <HeroBanner 
         title="游泳比賽動態時間表" 
@@ -950,35 +952,27 @@ const SwimmingSchedule = () => {
         )}
 
         {/* Schedule Table */}
-        {filters.daySelect && processedGroups.length > 0 ? (
+        {isLoading ? (
+          <ScheduleSkeleton />
+        ) : filters.daySelect && processedGroups.length > 0 ? (
           <ScheduleTable
-               groups={processedGroups}
-               onActualEndChange={handleActualEndChange}
-             />
+            groups={processedGroups}
+            onActualEndChange={handleActualEndChange}
+          />
         ) : groups.length > 0 && !filters.daySelect ? (
-          <div className="text-center py-12">
-            <div className="p-6 bg-muted/50 rounded-2xl inline-block">
-              <div className="w-12 h-12 text-muted-foreground mx-auto mb-3 bg-secondary rounded-lg flex items-center justify-center">
-                📅
-              </div>
-              <h3 className="text-lg font-medium text-muted-foreground">請選擇比賽天數</h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                請在上方選擇要檢視的比賽日程
-              </p>
-            </div>
-          </div>
+          <EmptyState
+            icon={Calendar}
+            emoji="📅"
+            title="請選擇比賽天數"
+            description="請在上方選擇要檢視的比賽日程"
+          />
         ) : (
-          <div className="text-center py-12">
-            <div className="p-6 bg-muted/50 rounded-2xl inline-block">
-              <div className="w-12 h-12 text-muted-foreground mx-auto mb-3 bg-secondary rounded-lg flex items-center justify-center">
-                📊
-              </div>
-              <h3 className="text-lg font-medium text-muted-foreground">尚未載入賽程資料</h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                請載入預設賽程或上傳Excel檔案
-              </p>
-            </div>
-          </div>
+          <EmptyState
+            icon={BarChart3}
+            emoji="📊"
+            title="尚未載入賽程資料"
+            description="請載入預設賽程或上傳 Excel 檔案"
+          />
         )}
       </div>
     </div>
