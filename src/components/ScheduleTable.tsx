@@ -151,24 +151,24 @@ export const ScheduleTable = ({ groups, onActualEndChange }: ScheduleTableProps)
                     </div>
 
                     {/* Times */}
-                    <div className="grid grid-cols-2 gap-3 text-sm border-t border-border pt-3">
+                    <div className="grid grid-cols-2 gap-3 text-base border-t border-border pt-3">
                       <div className="text-center min-w-0">
                         <div className="flex items-center justify-center gap-1 text-muted-foreground mb-1">
-                          <Clock className="w-3 h-3" />
-                          <span className="text-xs">預估開始</span>
+                          <Clock className="w-4 h-4" />
+                          <span className="text-sm">預估開始</span>
                         </div>
-                        <div className="font-mono text-sm">{group.scheduledStart ? fmtHM(group.scheduledStart) : '-'}</div>
+                        <div className="font-mono text-base">{group.scheduledStart ? fmtHM(group.scheduledStart) : '-'}</div>
                       </div>
                       <div className="text-center min-w-0">
                         <div className="flex items-center justify-center gap-1 text-muted-foreground mb-1">
-                          <Timer className="w-3 h-3" />
-                          <span className="text-xs">預估結束</span>
+                          <Timer className="w-4 h-4" />
+                          <span className="text-sm">預估結束</span>
                         </div>
-                        <div className="font-mono text-sm">{group.scheduledEnd ? fmtHM(group.scheduledEnd) : '-'}</div>
+                        <div className="font-mono text-base">{group.scheduledEnd ? fmtHM(group.scheduledEnd) : '-'}</div>
                       </div>
                       <div className="text-center min-w-0">
-                        <div className="text-xs text-muted-foreground mb-1">預估完賽</div>
-                        <div className="font-mono text-info font-medium">{mmss(group.avgSeconds)}</div>
+                        <div className="text-sm text-muted-foreground mb-1">預估完賽</div>
+                        <div className="font-mono text-info font-medium text-base">{mmss(group.avgSeconds)}</div>
                       </div>
                       <div className="text-center col-span-2 min-w-0 flex flex-col items-center">
                         <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
