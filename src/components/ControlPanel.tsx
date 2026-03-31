@@ -37,7 +37,7 @@ export const ControlPanel = ({
   actualTimeCount = 0,
 }: ControlPanelProps) => {
   const isMobile = useIsMobile();
-  const [isOpen, setIsOpen] = useState(!isMobile);
+  const [isOpen, setIsOpen] = useState(false);
 
   const resetFilters = () => {
     onFilterChange({
