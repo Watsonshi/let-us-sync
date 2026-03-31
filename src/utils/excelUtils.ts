@@ -2,6 +2,7 @@ import * as XLSX from 'xlsx';
 import { SwimGroup } from '@/types/swimming';
 import { parseMmSs } from './timeUtils';
 import { isNewFormatExcel, parseNewFormatExcel } from './newFormatParser';
+import { logger } from '@/lib/logger';
 
 // 舊格式需要的標題欄位
 const REQUIRED_HEADERS = ['項次', '組次', '年齡組', '性別', '比賽項目', '姓名', '單位', '報名成績'];

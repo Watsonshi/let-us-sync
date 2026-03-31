@@ -1,5 +1,6 @@
 // 這個檔案用來從 Excel 檔案生成完整的 sample-data.json
 import { parseExcelFile } from './excelUtils';
+import { logger } from '@/lib/logger';
 
 export const generateSampleDataFromExcel = async () => {
   try {

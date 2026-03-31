@@ -15,8 +15,8 @@ export const saveActualTime = (eventNo: number, heatNum: number, actualEnd: Date
     const records = loadAllActualTimes();
     records[key] = actualEnd.toISOString();
     localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
-  } catch (error) {
-    console.error('儲存實際時間失敗:', error);
+  } catch {
+    // storage write failed silently
   }
 };
 
