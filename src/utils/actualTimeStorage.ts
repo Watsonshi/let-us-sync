@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 // 管理實際結束時間的本地儲存
 
 const STORAGE_KEY = 'swimming_actual_times';

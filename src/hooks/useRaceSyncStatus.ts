@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { RaceSyncStatus, triggerRaceScrape, getRaceSyncStatus, ScrapeResult } from '@/lib/api/raceSync';
