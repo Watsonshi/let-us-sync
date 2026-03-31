@@ -193,7 +193,7 @@ export const parseExcelFile = async (file: File, fallback: number): Promise<Swim
     const wb = XLSX.read(buf, { type: 'array' });
     console.log('Excel工作表列表:', wb.SheetNames);
     
-    const sheetName = wb.SheetNames.includes('All') ? 'All' : wb.SheetNames[0];
+    const sheetName = wb.SheetNames.includes('All') ? 'All' : wb.SheetNames.includes('賽程資料') ? '賽程資料' : wb.SheetNames[0];
     const ws = wb.Sheets[sheetName];
     console.log('使用工作表:', sheetName);
     

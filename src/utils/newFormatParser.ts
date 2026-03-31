@@ -85,7 +85,7 @@ export const parseNewFormatExcel = async (file: File, fallback: number): Promise
   console.log('新格式解析 - 工作表列表:', wb.SheetNames);
   
   // 優先使用 "All" 或第一個工作表
-  const sheetName = wb.SheetNames.includes('All') ? 'All' : wb.SheetNames[0];
+  const sheetName = wb.SheetNames.includes('All') ? 'All' : wb.SheetNames.includes('賽程資料') ? '賽程資料' : wb.SheetNames[0];
   const ws = wb.Sheets[sheetName];
   
   console.log('新格式解析 - 使用工作表:', sheetName);
