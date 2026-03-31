@@ -437,7 +437,7 @@ const SwimmingSchedule = () => {
       currentGroup: current,
       inspectionGroup: inspection
     };
-  }, [processedGroups]);
+  }, [processedGroups, shouldAutoFocusCurrent]);
 
   const handleFileSelect = async (file: File) => {
     // 檢查是否為管理員
