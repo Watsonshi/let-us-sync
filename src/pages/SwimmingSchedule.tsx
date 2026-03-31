@@ -106,9 +106,11 @@ const SwimmingSchedule = () => {
         if (newGroups.length > 0) {
           setGroups(newGroups);
           
-          // 自動選擇今天對應的比賽天數
+          // 自動選擇今天對應的比賽天數，若非比賽日則顯示全部
           const todayKey = getTodayDayKey();
-          setFilters(prev => ({ ...prev, daySelect: todayKey }));
+          if (todayKey) {
+            setFilters(prev => ({ ...prev, daySelect: todayKey }));
+          }
         }
       } catch (error) {
         console.error('自動載入預設賽程失敗:', error);
