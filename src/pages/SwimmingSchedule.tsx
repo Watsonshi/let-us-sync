@@ -49,6 +49,8 @@ const SwimmingSchedule = () => {
     playerSelect: 'all',
     playerSearch: '', // 選手名稱搜尋
   });
+  const todayDayKey = getTodayDayKey();
+  const shouldAutoFocusCurrent = Boolean(todayDayKey) && filters.daySelect === todayDayKey;
 
   // 外部比賽資訊同步 - 僅用於顯示檢錄項次，不再自動設定 actualEnd
   const {
@@ -393,8 +395,8 @@ const SwimmingSchedule = () => {
       });
     }
     
-    // 自動隱藏已完賽組別，只保留當前比賽組別前15項
-    if (filtered.length > 15) {
+    // 只在實際比賽當天且選到當天賽程時，才自動聚焦目前進度附近的組別
+    if (shouldAutoFocusCurrent && filtered.length > 15) {
       const now = new Date();
       const currentGroupIndex = findCurrentEventIndex(filtered, now);
       
@@ -409,10 +411,17 @@ const SwimmingSchedule = () => {
     }
     
     return filtered;
-  }, [groups, config, filters, actualTimes, getActualTime]);
+  }, [groups, config, filters, actualTimes, getActualTime, players, shouldAutoFocusCurrent]);
 
   // 計算當前比賽組別和準備檢錄組別
   const { currentGroup, inspectionGroup } = useMemo(() => {
+    if (!shouldAutoFocusCurrent) {
+      return {
+        currentGroup: null,
+        inspectionGroup: null,
+      };
+    }
+
     const now = new Date();
     const currentIdx = findCurrentEventIndex(processedGroups, now);
     
@@ -428,7 +437,7 @@ const SwimmingSchedule = () => {
       currentGroup: current,
       inspectionGroup: inspection
     };
-  }, [processedGroups]);
+  }, [processedGroups, shouldAutoFocusCurrent]);
 
   const handleFileSelect = async (file: File) => {
     // 檢查是否為管理員
