@@ -18,6 +18,20 @@ export const FileUpload = ({ onFileSelect, onLoadDefault, onLoadPlayerList, isLo
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // 檢查檔案大小（限制 10MB）
+      const MAX_FILE_SIZE = 10 * 1024 * 1024;
+      if (file.size > MAX_FILE_SIZE) {
+        alert('檔案大小不得超過 10MB');
+        return;
+      }
+
+      // 檢查副檔名
+      const ext = file.name.split('.').pop()?.toLowerCase();
+      if (!['xlsx', 'xls', 'csv'].includes(ext || '')) {
+        alert('僅支援 .xlsx、.xls 或 .csv 檔案');
+        return;
+      }
+
       setSelectedFile(file);
       onFileSelect(file);
     }

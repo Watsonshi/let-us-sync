@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { PlayerData } from '@/types/swimming';
 
 // 簡化的 CSV 解析器（處理引號和逗號）
@@ -69,7 +70,7 @@ export const parsePlayerCSV = (csvContent: string): PlayerData[] => {
           });
         }
       } catch (error) {
-        console.warn('解析CSV行失敗:', columns, error);
+        logger.warn('解析CSV行失敗:', columns, error);
       }
     }
   }

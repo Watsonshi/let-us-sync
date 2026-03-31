@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { RaceSyncStatus, triggerRaceScrape, getRaceSyncStatus, ScrapeResult } from '@/lib/api/raceSync';
@@ -75,7 +76,7 @@ export function useRaceSyncStatus(options: UseRaceSyncStatusOptions = {}): UseRa
         'postgres_changes',
         { event: '*', schema: 'public', table: 'race_sync_status' },
         (payload: RealtimePostgresChangesPayload<RaceSyncStatus>) => {
-          console.log('Race sync status Realtime update:', payload);
+          logger.log('Race sync status Realtime update:', payload);
 
           if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
             const newData = payload.new as RaceSyncStatus;

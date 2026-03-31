@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { logger } from '@/lib/logger';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 import { CurrentTime } from '@/components/CurrentTime';
@@ -94,7 +95,7 @@ const SwimmingSchedule = () => {
         }
 
         if (!blob) {
-          console.warn('無法載入預設賽程檔案');
+          logger.warn('無法載入預設賽程檔案');
           return;
         }
 
@@ -115,7 +116,7 @@ const SwimmingSchedule = () => {
           }
         }
       } catch (error) {
-        console.error('自動載入預設賽程失敗:', error);
+        logger.error('自動載入預設賽程失敗:', error);
       } finally {
         setIsLoading(false);
       }
@@ -464,7 +465,7 @@ const SwimmingSchedule = () => {
         description: `成功載入 ${newGroups.length} 組比賽資料並更新資料庫`,
       });
     } catch (error) {
-      console.error('讀檔失敗:', error);
+      logger.error('讀檔失敗:', error);
       toast({
         title: "讀檔失敗",
         description: error instanceof Error ? error.message : "未知錯誤",
@@ -706,7 +707,7 @@ const SwimmingSchedule = () => {
 
       for (const url of candidateUrls) {
         try {
-          console.log('[default-schedule] fetching:', url);
+          logger.log('[default-schedule] fetching:', url);
           const res = await fetch(url);
           if (res.ok) {
             blob = await res.blob();
@@ -787,9 +788,9 @@ const SwimmingSchedule = () => {
     const base = new Date();
     const d = parseTimeInputToDate(base, time);
 
-    console.log('=== 更新實際結束時間 ===');
-    console.log(`項次 ${targetGroup.eventNo} 組次 ${targetGroup.heatNum}`);
-    console.log('新的實際結束時間:', d.toLocaleTimeString());
+    logger.log('=== 更新實際結束時間 ===');
+    logger.log(`項次 ${targetGroup.eventNo} 組次 ${targetGroup.heatNum}`);
+    logger.log('新的實際結束時間:', d.toLocaleTimeString());
     
     // 同步寫入資料庫
     const success = await saveActualTime(targetGroup.eventNo, targetGroup.heatNum, d);
