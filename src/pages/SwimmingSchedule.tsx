@@ -11,7 +11,7 @@ import { parseExcelFile, buildGroupsFromRows, dayKeyOfEvent, dayLabelOfKey, getT
 import { parseMmSs, parseTimeInputToDate, addSeconds, fmtHM } from '@/utils/timeUtils';
 import { findCurrentEventIndex } from '@/utils/currentEventDetection';
 import { parsePlayerCSV, getUniquePlayersFromCSV } from '@/utils/csvUtils';
-import { Waves, Timer, LogOut } from 'lucide-react';
+import { Waves, Timer, LogOut, Calendar, BarChart3 } from 'lucide-react';
 import HeroBanner from '@/components/HeroBanner';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
