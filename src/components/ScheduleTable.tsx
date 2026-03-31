@@ -134,7 +134,7 @@ export const ScheduleTable = ({ groups, onActualEndChange, unitFilter }: Schedul
                         <div className="flex items-center gap-1.5">
                           <Users className="w-4 h-4 text-muted-foreground" />
                           <span className="text-muted-foreground">年齡組:</span>
-                          <span className="font-medium">{group.ageGroup || '-'}</span>
+                          <span className="font-medium whitespace-nowrap">{group.ageGroup || '-'}</span>
                         </div>
                         <div className="flex items-center gap-1.5">
                           <UserRound className="w-4 h-4 text-muted-foreground" />
