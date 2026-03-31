@@ -129,8 +129,8 @@ export const ScheduleTable = ({ groups, onActualEndChange, unitFilter }: Schedul
                     </div>
 
                     {/* Event details */}
-                    <div className="flex gap-4">
-                      <div className="space-y-1.5 text-base flex-1">
+                    <div className="flex gap-3">
+                      <div className="space-y-1.5 text-base flex-[3] min-w-0">
                         <div className="flex items-center gap-1.5">
                           <Users className="w-4 h-4 text-muted-foreground" />
                           <span className="text-muted-foreground">年齡組:</span>
