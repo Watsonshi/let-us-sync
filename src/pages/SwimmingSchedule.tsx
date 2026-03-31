@@ -49,6 +49,8 @@ const SwimmingSchedule = () => {
     playerSelect: 'all',
     playerSearch: '', // 選手名稱搜尋
   });
+  const todayDayKey = getTodayDayKey();
+  const shouldAutoFocusCurrent = Boolean(todayDayKey) && filters.daySelect === todayDayKey;
 
   // 外部比賽資訊同步 - 僅用於顯示檢錄項次，不再自動設定 actualEnd
   const {
