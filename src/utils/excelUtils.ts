@@ -19,7 +19,7 @@ export const getTodayDayKey = (): string => {
   const m = now.getMonth() + 1;
   const d = now.getDate();
   const match = DAY_RULES.find(r => r.month === m && r.day === d);
-  return match ? match.key : DAY_RULES[0].key;
+  return match ? match.key : '';
 };
 
 export const dayKeyOfEvent = (ev: number): string => {
