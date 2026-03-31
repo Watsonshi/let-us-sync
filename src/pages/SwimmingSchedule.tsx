@@ -183,8 +183,7 @@ const SwimmingSchedule = () => {
 
   // 應用篩選和計算時間（結合 Realtime 同步的 actualTimes）
   const processedGroups = useMemo(() => {
-    // 如果沒有載入資料或沒有選擇天數，返回空陣列
-    if (!groups.length || !filters.daySelect) return [];
+    if (!groups.length) return [];
 
     const base = new Date();
     const fallbackSeconds = parseMmSs(config.fallback) ?? 360;
@@ -922,6 +921,14 @@ const SwimmingSchedule = () => {
             </div>
             
             <div className="flex flex-wrap justify-center gap-3">
+              <Button
+                variant={!filters.daySelect ? "default" : "outline"}
+                size="lg"
+                onClick={() => setFilters(prev => ({ ...prev, daySelect: '' }))}
+                className="min-w-24 transition-all duration-200 hover:scale-105"
+              >
+                全部
+              </Button>
               {filterOptions.days.map((day) => (
                 <Button
                   key={day.key}
@@ -938,7 +945,7 @@ const SwimmingSchedule = () => {
         )}
 
         {/* Current Race Card */}
-        {filters.daySelect && processedGroups.length > 0 && (
+        {processedGroups.length > 0 && (
           <CurrentRaceCard 
             currentGroup={currentGroup}
             inspectionGroup={inspectionGroup}
@@ -956,17 +963,10 @@ const SwimmingSchedule = () => {
         {/* Schedule Table */}
         {isLoading ? (
           <ScheduleSkeleton />
-        ) : filters.daySelect && processedGroups.length > 0 ? (
+        ) : processedGroups.length > 0 ? (
           <ScheduleTable
             groups={processedGroups}
             onActualEndChange={handleActualEndChange}
-          />
-        ) : groups.length > 0 && !filters.daySelect ? (
-          <EmptyState
-            icon={Calendar}
-            emoji="📅"
-            title="請選擇比賽天數"
-            description="請在上方選擇要檢視的比賽日程"
           />
         ) : (
           <EmptyState
