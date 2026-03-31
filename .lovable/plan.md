@@ -1,82 +1,39 @@
-# 外部即時資料抓取與比賽時間聯動計畫
 
-## 實作狀態：✅ 已完成
 
----
+## 在手機卡片中顯示選手姓名（右半部垂直排列）
 
-## 1. 網頁分析結果
+### 概念
 
-### 目標網頁結構
-**網址：** `https://ctsa.utk.com.tw/CTSA/public/race/running_game.aspx`
+將目前的「年齡組 / 性別 / 項目」區域改為左右兩欄佈局：
+- **左半部**：維持現有的年齡組、性別、項目資訊
+- **右半部**：垂直排列顯示該組選手姓名
 
-從網頁 HTML 分析，可以抓取到兩個關鍵資訊：
-- **即時檢錄項目：** `(43)15 ~ 17歲級女子組游泳 200公尺蛙式 計時決賽`
-- **即時比賽項目：** `(41)13 & 14歲級女子組游泳 200公尺蛙式 計時決賽`
+當篩選了特定參賽單位時，只顯示該單位的選手；未篩選時預設不顯示選手姓名。
 
-資料格式特點：
-- 項次編號在括號內，如 `(43)` 代表項次 43
-- 沒有顯示組次資訊（可能需要額外處理）
+### 佈局示意
 
----
+```text
+┌─────────────────────────────────┐
+│  左半部              │ 右半部    │
+│  👥 年齡組: 國小低年級 │ 王小明   │
+│  🧑 性別: 女子組      │ 李小華   │
+│  🌊 項目: 50公尺仰式  │ 張小美   │
+└─────────────────────────────────┘
+```
 
-## 2. 技術可行性評估
+### 技術方案
 
-| 評估項目 | 結果 | 說明 |
-|---------|------|------|
-| 網頁結構 | ✅ 可抓取 | 需要使用 Firecrawl 處理 JavaScript 渲染 |
-| 即時更新 | ✅ 需定時輪詢 | 前端設定 10 秒輪詢間隔 |
-| 跨域問題 | ✅ 已解決 | 透過 Edge Function 處理 |
+**1. `src/pages/SwimmingSchedule.tsx`（1 行）**
+- 傳遞 `unitFilter={filters.unitSelect}` prop 給 `<ScheduleTable>`
 
----
+**2. `src/components/ScheduleTable.tsx`（約 25 行）**
+- Props 新增 `unitFilter?: string`
+- 將 Event details 區塊（第 131 行附近）從 `space-y-1.5` 改為 `flex gap-4`：
+  - 左側 `div`（`flex-1`）：保留現有年齡組、性別、項目的垂直排列
+  - 右側 `div`（`flex-1`）：當 `unitFilter` 不為 `'all'` 且有值時，從 `group.playerData` 篩選出 `unit === unitFilter` 的選手，垂直排列顯示姓名
+- 右側選手名單使用小字體 `text-sm`，搭配 `text-muted-foreground` 保持視覺層次
 
-## 3. 已完成的實作
+### 改動範圍
+- `src/pages/SwimmingSchedule.tsx`：1 行
+- `src/components/ScheduleTable.tsx`：約 25 行
 
-### 資料庫變更
-- ✅ `race_sync_status` 資料表已建立
-- ✅ RLS 政策已設定（任何人可讀取）
-- ✅ Realtime 已啟用
-
-### Edge Function
-- ✅ `supabase/functions/scrape-race-info/index.ts` 已建立
-- ✅ 使用 Firecrawl 抓取 JavaScript 渲染的頁面
-- ✅ 支援降級到直接 fetch（無 Firecrawl 時）
-- ✅ 解析項次編號並存入資料庫
-
-### 前端整合
-- ✅ `src/hooks/useRaceSyncStatus.ts` - 同步狀態 Hook
-- ✅ `src/lib/api/raceSync.ts` - API 呼叫封裝
-- ✅ `src/components/CurrentRaceCard.tsx` - 顯示外部同步狀態
-- ✅ `src/pages/SwimmingSchedule.tsx` - 整合同步功能
-
-### 功能特色
-- 管理員可手動觸發同步
-- 管理員可開啟/關閉自動輪詢（10 秒間隔）
-- 顯示最後同步時間
-- 顯示同步來源（外部資料 vs 本地推算）
-- Realtime 更新（所有用戶同時看到最新資料）
-
----
-
-## 4. 使用說明
-
-### 前端操作
-1. 進入游泳賽程頁面
-2. 選擇比賽天數
-3. 在「目前比賽組別」卡片中可見同步控制按鈕（僅管理員）
-4. 點擊「立即同步」手動觸發
-5. 點擊「開始自動同步」啟用每 10 秒自動更新
-
-### 資料來源
-- **外部同步**：從 CTSA 網站抓取即時比賽項次
-- **本地推算**：根據預估時間和實際結束時間計算
-
----
-
-## 5. 注意事項
-
-| 項目 | 說明 |
-|------|------|
-| 組次資訊 | 外部網頁不顯示組次，只顯示項次 |
-| 網頁變動 | 如果 CTSA 網頁結構改變，需要更新解析邏輯 |
-| 同步延遲 | 預計有 10-15 秒的延遲（取決於輪詢頻率） |
-| Firecrawl | 需要連接 Firecrawl connector 才能正常運作 |
