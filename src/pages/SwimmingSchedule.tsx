@@ -183,8 +183,7 @@ const SwimmingSchedule = () => {
 
   // 應用篩選和計算時間（結合 Realtime 同步的 actualTimes）
   const processedGroups = useMemo(() => {
-    // 如果沒有載入資料或沒有選擇天數，返回空陣列
-    if (!groups.length || !filters.daySelect) return [];
+    if (!groups.length) return [];
 
     const base = new Date();
     const fallbackSeconds = parseMmSs(config.fallback) ?? 360;
