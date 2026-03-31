@@ -7,9 +7,10 @@ import { isNewFormatExcel, parseNewFormatExcel } from './newFormatParser';
 const REQUIRED_HEADERS = ['項次', '組次', '年齡組', '性別', '比賽項目', '姓名', '單位', '報名成績'];
 
 const DAY_RULES = [
-  { key: 'd1', label: '第一天（115/2/6，五）', start: 1, end: 54, month: 2, day: 6 },
-  { key: 'd2', label: '第二天（115/2/7，六）', start: 55, end: 116, month: 2, day: 7 },
-  { key: 'd3', label: '第三天（115/2/8，日）', start: 117, end: 176, month: 2, day: 8 },
+  { key: 'd1', label: '第一天（115/4/2，三）', start: 1, end: 8, month: 4, day: 2 },
+  { key: 'd2', label: '第二天（115/4/3，四）', start: 9, end: 26, month: 4, day: 3 },
+  { key: 'd3', label: '第三天（115/4/4，五）', start: 27, end: 50, month: 4, day: 4 },
+  { key: 'd4', label: '第四天（115/4/5，六）', start: 51, end: 74, month: 4, day: 5 },
 ];
 
 /** 根據今天日期自動判斷對應的比賽天數 key，找不到則回傳第一天 */

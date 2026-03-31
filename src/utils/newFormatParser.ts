@@ -3,7 +3,7 @@ import { SwimGroup } from '@/types/swimming';
 import { parseMmSs } from './timeUtils';
 import { dayKeyOfEvent, dayLabelOfKey } from './excelUtils';
 
-// 新格式欄位名稱
+// 新格式欄位名稱（組次為可選欄位）
 const NEW_FORMAT_HEADERS = ['選手姓名', '項次', '比賽項目', '組別', '單位', '報名成績'];
 
 /**
