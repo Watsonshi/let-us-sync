@@ -290,6 +290,15 @@ const SwimmingSchedule = () => {
       // 跳過午休時段
       cursor = skipLunchIfNeeded(cursor);
 
+      // 固定開賽時間覆蓋：項次 20 固定 14:30 開賽
+      const FIXED_START_EVENTS: Record<number, string> = { 20: '14:30' };
+      if (FIXED_START_EVENTS[g.eventNo] && g.heatNum === 1) {
+        const fixedTime = parseTimeInputToDate(base, FIXED_START_EVENTS[g.eventNo]);
+        if (fixedTime > cursor) {
+          cursor = fixedTime;
+        }
+      }
+
       const estStart = new Date(cursor);
       const estEnd = addSeconds(estStart, g.avgSeconds);
 
