@@ -231,6 +231,7 @@ const SwimmingSchedule = () => {
         case 'd1': return '13:00';
         case 'd2': return '08:30';
         case 'd3': return '08:30';
+        case 'd4': return '08:30';
         default: return '08:15';
       }
     };
@@ -291,7 +292,7 @@ const SwimmingSchedule = () => {
       cursor = skipLunchIfNeeded(cursor);
 
       // 固定開賽時間覆蓋：強制指定項次在特定時間開賽
-      const FIXED_START_EVENTS: Record<number, string> = { 20: '14:30', 39: '13:30' };
+      const FIXED_START_EVENTS: Record<number, string> = { 20: '14:30', 39: '13:30', 62: '13:30' };
       if (FIXED_START_EVENTS[g.eventNo] && g.heatNum === 1) {
         const fixedTime = parseTimeInputToDate(base, FIXED_START_EVENTS[g.eventNo]);
         cursor = fixedTime;
