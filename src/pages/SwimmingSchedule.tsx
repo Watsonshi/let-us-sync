@@ -231,6 +231,7 @@ const SwimmingSchedule = () => {
         case 'd1': return '13:00';
         case 'd2': return '08:30';
         case 'd3': return '08:30';
+        case 'd4': return '08:30';
         default: return '08:15';
       }
     };
