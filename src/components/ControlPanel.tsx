@@ -109,7 +109,7 @@ export const ControlPanel = ({
           </SelectTrigger>
           <SelectContent className="bg-background border border-border shadow-lg z-50">
             <SelectItem value="all">全部項目</SelectItem>
-            {eventTypes.map((eventType) => (
+            {eventTypes.filter(v => v).map((eventType) => (
               <SelectItem key={eventType} value={eventType}>{eventType}</SelectItem>
             ))}
           </SelectContent>
