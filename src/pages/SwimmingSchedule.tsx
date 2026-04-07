@@ -8,7 +8,7 @@ import { FileUpload } from '@/components/FileUpload';
 import { ScheduleTable } from '@/components/ScheduleTable';
 import { CurrentRaceCard } from '@/components/CurrentRaceCard';
 import { SwimGroup, ScheduleConfig, FilterOptions, PlayerData } from '@/types/swimming';
-import { parseExcelFile, buildGroupsFromRows, dayKeyOfEvent, dayLabelOfKey, getTodayDayKey } from '@/utils/excelUtils';
+import { parseExcelFile, buildGroupsFromRows, dayKeyOfEvent, dayLabelOfKey, getTodayDayKey, getDayDate } from '@/utils/excelUtils';
 import { parseMmSs, parseTimeInputToDate, addSeconds, fmtHM } from '@/utils/timeUtils';
 import { findCurrentEventIndex } from '@/utils/currentEventDetection';
 import { parsePlayerCSV, getUniquePlayersFromCSV } from '@/utils/csvUtils';
@@ -188,7 +188,7 @@ const SwimmingSchedule = () => {
   const processedGroups = useMemo(() => {
     if (!groups.length) return [];
 
-    const base = new Date();
+    
     const fallbackSeconds = parseMmSs(config.fallback) ?? 360;
     
     // 將資料庫的 actualTimes 合併到 groups
@@ -269,13 +269,15 @@ const SwimmingSchedule = () => {
     allSorted.forEach((g, i) => {
       if (g.dayLabel && g.dayLabel !== currentDay) {
         currentDay = g.dayLabel;
+        const dayBase = getDayDate(g.dayKey);
         const dayStartTime = getDayStartTime(g.dayKey);
-        cursor = parseTimeInputToDate(base, dayStartTime);
+        cursor = parseTimeInputToDate(dayBase, dayStartTime);
       }
 
       // 確保 cursor 已初始化（防止第一筆資料沒有 dayLabel 的情況）
       if (!cursor) {
-        cursor = parseTimeInputToDate(base, '08:15');
+        const dayBase = getDayDate(g.dayKey);
+        cursor = parseTimeInputToDate(dayBase, '08:15');
       }
 
       // 使用已計算的前一組結果來更新 cursor
@@ -292,7 +294,8 @@ const SwimmingSchedule = () => {
       // 固定開賽時間覆蓋：強制指定項次在特定時間開賽
       const FIXED_START_EVENTS: Record<number, string> = {};
       if (FIXED_START_EVENTS[g.eventNo] && g.heatNum === 1) {
-        const fixedTime = parseTimeInputToDate(base, FIXED_START_EVENTS[g.eventNo]);
+        const dayBase = getDayDate(g.dayKey);
+        const fixedTime = parseTimeInputToDate(dayBase, FIXED_START_EVENTS[g.eventNo]);
         cursor = fixedTime;
       }
 
@@ -756,7 +759,7 @@ const SwimmingSchedule = () => {
       return;
     }
 
-    const base = new Date();
+    const base = getDayDate(targetGroup.dayKey);
     const d = parseTimeInputToDate(base, time);
 
     logger.log('=== 更新實際結束時間 ===');
