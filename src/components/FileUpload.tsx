@@ -2,30 +2,27 @@ import { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import { Upload, FileSpreadsheet, Info, X } from 'lucide-react';
+import { Upload, FileSpreadsheet, X } from 'lucide-react';
 
 interface FileUploadProps {
   onFileSelect: (file: File) => void;
-  onLoadDefault: () => void;
   onLoadPlayerList: () => void;
   isLoading: boolean;
 }
 
-export const FileUpload = ({ onFileSelect, onLoadDefault, onLoadPlayerList, isLoading }: FileUploadProps) => {
+export const FileUpload = ({ onFileSelect, onLoadPlayerList, isLoading }: FileUploadProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // 檢查檔案大小（限制 10MB）
       const MAX_FILE_SIZE = 10 * 1024 * 1024;
       if (file.size > MAX_FILE_SIZE) {
         alert('檔案大小不得超過 10MB');
         return;
       }
 
-      // 檢查副檔名
       const ext = file.name.split('.').pop()?.toLowerCase();
       if (!['xlsx', 'xls', 'csv'].includes(ext || '')) {
         alert('僅支援 .xlsx、.xls 或 .csv 檔案');
@@ -52,15 +49,6 @@ export const FileUpload = ({ onFileSelect, onLoadDefault, onLoadPlayerList, isLo
     <Card className="shadow-custom-md">
       <CardContent className="p-6">
         <div className="flex flex-col sm:flex-row gap-4 items-center">
-          <Button
-            onClick={onLoadDefault}
-            disabled={isLoading}
-            className="bg-gradient-primary hover:shadow-custom-glow transition-all duration-300 flex items-center gap-2"
-          >
-            <FileSpreadsheet className="w-4 h-4" />
-            {isLoading ? '載入中...' : '載入預設賽程'}
-          </Button>
-          
           <Button
             onClick={onLoadPlayerList}
             disabled={isLoading}
@@ -108,7 +96,7 @@ export const FileUpload = ({ onFileSelect, onLoadDefault, onLoadPlayerList, isLo
         </div>
         
         <p className="text-xs text-muted-foreground mt-3">
-          點擊「載入預設賽程」自動載入游泳比賽資料，或選擇其他Excel檔案（支援.xlsx或.csv格式）。
+          選擇Excel檔案上傳賽程資料（支援.xlsx或.csv格式），或點擊「載入選手名單」。
         </p>
       </CardContent>
     </Card>
