@@ -838,6 +838,7 @@ const SwimmingSchedule = () => {
         {isAdmin && (
           <FileUpload
             onFileSelect={handleFileSelect}
+            onLoadDefault={handleLoadDefault}
             onLoadPlayerList={handleLoadPlayerList}
             isLoading={isLoading}
           />
