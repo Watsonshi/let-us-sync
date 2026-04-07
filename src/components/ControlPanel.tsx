@@ -91,7 +91,7 @@ export const ControlPanel = ({
           </SelectTrigger>
           <SelectContent className="bg-background border border-border shadow-lg z-50">
             <SelectItem value="all">全部性別</SelectItem>
-            {genders.map((gender) => (
+            {genders.filter(v => v).map((gender) => (
               <SelectItem key={gender} value={gender}>{gender}</SelectItem>
             ))}
           </SelectContent>
