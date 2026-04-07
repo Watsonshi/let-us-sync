@@ -8,7 +8,7 @@ import { logger } from '@/lib/logger';
 const REQUIRED_HEADERS = ['項次', '組次', '年齡組', '性別', '比賽項目', '姓名', '單位', '報名成績'];
 
 const DAY_RULES = [
-  { key: 'd1', label: '第一天（115/4/11，六）', start: 1, end: 100, month: 4, day: 11 },
+  { key: 'd1', label: '第一天（115/4/11，六）', start: 1, end: 110, month: 4, day: 11 },
   { key: 'd2', label: '第二天（115/4/12，日）', start: 111, end: 204, month: 4, day: 12 },
 ];
 
