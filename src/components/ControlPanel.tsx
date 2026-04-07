@@ -145,7 +145,7 @@ export const ControlPanel = ({
           </SelectTrigger>
           <SelectContent className="bg-background border border-border shadow-lg z-50 max-h-60 overflow-y-auto">
             <SelectItem value="all" className="text-base">全部選手</SelectItem>
-            {players.map((player) => (
+            {players.filter(v => v).map((player) => (
               <SelectItem key={player} value={player} className="text-base">{player}</SelectItem>
             ))}
           </SelectContent>
