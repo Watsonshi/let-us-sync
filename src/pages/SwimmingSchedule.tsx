@@ -691,6 +691,40 @@ const SwimmingSchedule = () => {
   };
 
 
+  const handleLoadDefault = async () => {
+    try {
+      setIsLoading(true);
+      const baseUrl = import.meta.env.BASE_URL || '/';
+      const candidateUrls = Array.from(
+        new Set([`${baseUrl}default-schedule.xlsx`, `/default-schedule.xlsx`]),
+      );
+      let blob: Blob | null = null;
+      let lastError: Error | null = null;
+      for (const url of candidateUrls) {
+        try {
+          const res = await fetch(url);
+          if (res.ok) { blob = await res.blob(); break; }
+          lastError = new Error(`無法載入：${url} (HTTP ${res.status})`);
+        } catch (e) {
+          lastError = new Error(`無法載入：${url} (${e instanceof Error ? e.message : '未知錯誤'})`);
+        }
+      }
+      if (!blob) throw lastError ?? new Error('無法載入預設賽程檔案');
+      const file = new File([blob], 'default-schedule.xlsx', {
+        type: blob.type || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      });
+      const fallback = parseMmSs(config.fallback) ?? 360;
+      const newGroups = await parseExcelFile(file, fallback);
+      setGroups(newGroups);
+      const maxEventNo = Math.max(...newGroups.map(g => g.eventNo));
+      toast({ title: "預設賽程載入成功", description: `成功載入 ${newGroups.length} 組（項次 1-${maxEventNo}）` });
+    } catch (error) {
+      toast({ title: "載入失敗", description: `${error instanceof Error ? error.message : '未知錯誤'}`, variant: "destructive" });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleActualEndChange = async (groupIndex: number, time: string) => {
     // 非管理員不能修改
     if (!isAdmin) {
