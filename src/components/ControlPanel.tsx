@@ -73,7 +73,7 @@ export const ControlPanel = ({
           </SelectTrigger>
           <SelectContent className="bg-background border border-border shadow-lg z-50">
             <SelectItem value="all">全部年齡組</SelectItem>
-            {ageGroups.map((age) => (
+            {ageGroups.filter(v => v).map((age) => (
               <SelectItem key={age} value={age}>{age}</SelectItem>
             ))}
           </SelectContent>
