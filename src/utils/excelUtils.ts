@@ -7,10 +7,20 @@ import { logger } from '@/lib/logger';
 // 舊格式需要的標題欄位
 const REQUIRED_HEADERS = ['項次', '組次', '年齡組', '性別', '比賽項目', '姓名', '單位', '報名成績'];
 
-const DAY_RULES = [
+export const DAY_RULES = [
   { key: 'd1', label: '第一天（115/4/11，六）', start: 1, end: 110, month: 4, day: 11 },
   { key: 'd2', label: '第二天（115/4/12，日）', start: 111, end: 204, month: 4, day: 12 },
 ];
+
+/** 根據 dayKey 取得該天的實際比賽日期 */
+export const getDayDate = (dayKey: string): Date => {
+  const rule = DAY_RULES.find(r => r.key === dayKey);
+  if (rule) {
+    const now = new Date();
+    return new Date(now.getFullYear(), rule.month - 1, rule.day);
+  }
+  return new Date(); // fallback to today
+};
 
 /** 根據今天日期自動判斷對應的比賽天數 key，找不到則回傳第一天 */
 export const getTodayDayKey = (): string => {
