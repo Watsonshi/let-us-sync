@@ -14,11 +14,13 @@ export const isNewFormatExcel = (rows2D: any[][]): boolean => {
   const maxScan = Math.min(rows2D.length, 10);
   for (let i = 0; i < maxScan; i++) {
     const cols = rows2D[i].map(c => String(c ?? '').trim());
+    // 如果有「年齡組」和「性別」欄位，這是舊格式，不是新格式
+    if (cols.includes('年齡組') && cols.includes('性別')) return false;
+    // 新格式必須有「選手姓名」或「組別」等專屬欄位
     let hit = 0;
     for (const need of NEW_FORMAT_HEADERS) {
       if (cols.includes(need)) hit++;
     }
-    // 如果找到至少 4 個新格式欄位，視為新格式
     if (hit >= 4) return true;
   }
   return false;
