@@ -8,7 +8,7 @@ import { FileUpload } from '@/components/FileUpload';
 import { ScheduleTable } from '@/components/ScheduleTable';
 import { CurrentRaceCard } from '@/components/CurrentRaceCard';
 import { SwimGroup, ScheduleConfig, FilterOptions, PlayerData } from '@/types/swimming';
-import { parseExcelFile, buildGroupsFromRows, dayKeyOfEvent, dayLabelOfKey, getTodayDayKey } from '@/utils/excelUtils';
+import { parseExcelFile, buildGroupsFromRows, dayKeyOfEvent, dayLabelOfKey, getTodayDayKey, getDayDate } from '@/utils/excelUtils';
 import { parseMmSs, parseTimeInputToDate, addSeconds, fmtHM } from '@/utils/timeUtils';
 import { findCurrentEventIndex } from '@/utils/currentEventDetection';
 import { parsePlayerCSV, getUniquePlayersFromCSV } from '@/utils/csvUtils';
