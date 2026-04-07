@@ -228,9 +228,9 @@ const SwimmingSchedule = () => {
     // 先基於完整資料計算所有時間
     const getDayStartTime = (dayKey: string) => {
       switch (dayKey) {
-        case 'd1': return '08:00';
-        case 'd2': return '08:00';
-        default: return '08:00';
+        case 'd1': return '08:10';
+        case 'd2': return '08:10';
+        default: return '08:10';
       }
     };
 
