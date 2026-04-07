@@ -73,7 +73,7 @@ export const ControlPanel = ({
           </SelectTrigger>
           <SelectContent className="bg-background border border-border shadow-lg z-50">
             <SelectItem value="all">全部年齡組</SelectItem>
-            {ageGroups.map((age) => (
+            {ageGroups.filter(v => v).map((age) => (
               <SelectItem key={age} value={age}>{age}</SelectItem>
             ))}
           </SelectContent>
@@ -91,7 +91,7 @@ export const ControlPanel = ({
           </SelectTrigger>
           <SelectContent className="bg-background border border-border shadow-lg z-50">
             <SelectItem value="all">全部性別</SelectItem>
-            {genders.map((gender) => (
+            {genders.filter(v => v).map((gender) => (
               <SelectItem key={gender} value={gender}>{gender}</SelectItem>
             ))}
           </SelectContent>
@@ -109,7 +109,7 @@ export const ControlPanel = ({
           </SelectTrigger>
           <SelectContent className="bg-background border border-border shadow-lg z-50">
             <SelectItem value="all">全部項目</SelectItem>
-            {eventTypes.map((eventType) => (
+            {eventTypes.filter(v => v).map((eventType) => (
               <SelectItem key={eventType} value={eventType}>{eventType}</SelectItem>
             ))}
           </SelectContent>
@@ -127,7 +127,7 @@ export const ControlPanel = ({
           </SelectTrigger>
           <SelectContent className="bg-background border border-border shadow-lg z-50 max-h-60 overflow-y-auto">
             <SelectItem value="all">全部單位</SelectItem>
-            {units.map((unit) => (
+            {units.filter(v => v).map((unit) => (
               <SelectItem key={unit} value={unit}>{unit}</SelectItem>
             ))}
           </SelectContent>
@@ -145,7 +145,7 @@ export const ControlPanel = ({
           </SelectTrigger>
           <SelectContent className="bg-background border border-border shadow-lg z-50 max-h-60 overflow-y-auto">
             <SelectItem value="all" className="text-base">全部選手</SelectItem>
-            {players.map((player) => (
+            {players.filter(v => v).map((player) => (
               <SelectItem key={player} value={player} className="text-base">{player}</SelectItem>
             ))}
           </SelectContent>
