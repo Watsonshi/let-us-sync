@@ -188,7 +188,7 @@ const SwimmingSchedule = () => {
   const processedGroups = useMemo(() => {
     if (!groups.length) return [];
 
-    const fallbackBase = new Date(); // only used for non-day-specific fallback
+    
     const fallbackSeconds = parseMmSs(config.fallback) ?? 360;
     
     // 將資料庫的 actualTimes 合併到 groups
