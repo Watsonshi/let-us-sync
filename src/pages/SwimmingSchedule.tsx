@@ -276,7 +276,8 @@ const SwimmingSchedule = () => {
 
       // 確保 cursor 已初始化（防止第一筆資料沒有 dayLabel 的情況）
       if (!cursor) {
-        cursor = parseTimeInputToDate(base, '08:15');
+        const dayBase = getDayDate(g.dayKey);
+        cursor = parseTimeInputToDate(dayBase, '08:15');
       }
 
       // 使用已計算的前一組結果來更新 cursor
