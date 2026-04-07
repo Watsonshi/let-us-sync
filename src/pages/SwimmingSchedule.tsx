@@ -69,61 +69,6 @@ const SwimmingSchedule = () => {
     pollingInterval: 30000,
   });
 
-  // 自動載入預設賽程（從 default-schedule.xlsx）
-  useEffect(() => {
-    const loadDefaultSchedule = async () => {
-      try {
-        setIsLoading(true);
-        
-        const baseUrl = import.meta.env.BASE_URL || '/';
-        const candidateUrls = [
-          `${baseUrl}default-schedule.xlsx`,
-          `/default-schedule.xlsx`,
-        ];
-
-        let blob: Blob | null = null;
-        for (const url of candidateUrls) {
-          try {
-            const res = await fetch(url);
-            if (res.ok) {
-              blob = await res.blob();
-              break;
-            }
-          } catch {
-            // 繼續嘗試下一個 URL
-          }
-        }
-
-        if (!blob) {
-          logger.warn('無法載入預設賽程檔案');
-          return;
-        }
-
-        const file = new File([blob], 'default-schedule.xlsx', {
-          type: blob.type || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        });
-
-        const fallback = parseMmSs(config.fallback) ?? 360;
-        const newGroups = await parseExcelFile(file, fallback);
-        
-        if (newGroups.length > 0) {
-          setGroups(newGroups);
-          
-          // 自動選擇今天對應的比賽天數，若非比賽日則顯示全部
-          const todayKey = getTodayDayKey();
-          if (todayKey) {
-            setFilters(prev => ({ ...prev, daySelect: todayKey }));
-          }
-        }
-      } catch (error) {
-        logger.error('自動載入預設賽程失敗:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadDefaultSchedule();
-  }, []);
 
   // 計算篩選選項
   const filterOptions = useMemo(() => {
@@ -692,75 +637,6 @@ const SwimmingSchedule = () => {
     }
   };
 
-  const handleLoadDefault = async () => {
-    try {
-      setIsLoading(true);
-      
-      // 從 public/比賽成績.xlsx 載入賽程資料
-      // 注意：不同部署環境的 base path 可能不同，因此這裡同時嘗試 BASE_URL 與根目錄兩種路徑
-      const baseUrl = import.meta.env.BASE_URL || '/';
-      // 正式發布環境可能無法穩定提供「中文檔名」靜態資源，因此優先使用 ASCII 檔名
-      const candidateUrls = Array.from(
-        new Set([
-          `${baseUrl}default-schedule.xlsx`,
-          `/default-schedule.xlsx`,
-          `${baseUrl}比賽成績.xlsx`,
-          `/比賽成績.xlsx`,
-        ]),
-      );
-
-      let blob: Blob | null = null;
-      let usedUrl = '';
-      let lastError: Error | null = null;
-
-      for (const url of candidateUrls) {
-        try {
-          logger.log('[default-schedule] fetching:', url);
-          const res = await fetch(url);
-          if (res.ok) {
-            blob = await res.blob();
-            usedUrl = url;
-            break;
-          }
-          lastError = new Error(`無法載入預設賽程檔案：${url} (HTTP ${res.status})`);
-        } catch (e) {
-          lastError = new Error(
-            `無法載入預設賽程檔案：${url} (${e instanceof Error ? e.message : '未知錯誤'})`,
-          );
-        }
-      }
-
-      if (!blob) {
-        throw lastError ?? new Error('無法載入預設賽程檔案：未知錯誤');
-      }
-
-      const file = new File([blob], '比賽成績.xlsx', {
-        type:
-          blob.type ||
-          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      });
-      const fallback = parseMmSs(config.fallback) ?? 360;
-      const newGroups = await parseExcelFile(file, fallback);
-      setGroups(newGroups);
-      
-      const maxEventNo = Math.max(...newGroups.map(g => g.eventNo));
-      
-      toast({
-        title: "預設賽程載入成功",
-        description: `成功載入 ${newGroups.length} 組比賽資料（項次 1-${maxEventNo}）。來源：${usedUrl}`,
-      });
-    } catch (error) {
-      const errorMsg = `載入預設賽程失敗：${error instanceof Error ? error.message : '未知錯誤'}`;
-      
-      toast({
-        title: "載入失敗",
-        description: errorMsg,
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleActualEndChange = async (groupIndex: number, time: string) => {
     // 非管理員不能修改
@@ -909,7 +785,6 @@ const SwimmingSchedule = () => {
         {isAdmin && (
           <FileUpload
             onFileSelect={handleFileSelect}
-            onLoadDefault={handleLoadDefault}
             onLoadPlayerList={handleLoadPlayerList}
             isLoading={isLoading}
           />
@@ -978,7 +853,7 @@ const SwimmingSchedule = () => {
             icon={BarChart3}
             emoji="📊"
             title="尚未載入賽程資料"
-            description="請載入預設賽程或上傳 Excel 檔案"
+            description="請上傳 Excel 檔案以載入賽程資料"
           />
         )}
       </div>
