@@ -127,7 +127,7 @@ export const ControlPanel = ({
           </SelectTrigger>
           <SelectContent className="bg-background border border-border shadow-lg z-50 max-h-60 overflow-y-auto">
             <SelectItem value="all">全部單位</SelectItem>
-            {units.map((unit) => (
+            {units.filter(v => v).map((unit) => (
               <SelectItem key={unit} value={unit}>{unit}</SelectItem>
             ))}
           </SelectContent>
