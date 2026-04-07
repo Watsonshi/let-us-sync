@@ -69,61 +69,6 @@ const SwimmingSchedule = () => {
     pollingInterval: 30000,
   });
 
-  // 自動載入預設賽程（從 default-schedule.xlsx）
-  useEffect(() => {
-    const loadDefaultSchedule = async () => {
-      try {
-        setIsLoading(true);
-        
-        const baseUrl = import.meta.env.BASE_URL || '/';
-        const candidateUrls = [
-          `${baseUrl}default-schedule.xlsx`,
-          `/default-schedule.xlsx`,
-        ];
-
-        let blob: Blob | null = null;
-        for (const url of candidateUrls) {
-          try {
-            const res = await fetch(url);
-            if (res.ok) {
-              blob = await res.blob();
-              break;
-            }
-          } catch {
-            // 繼續嘗試下一個 URL
-          }
-        }
-
-        if (!blob) {
-          logger.warn('無法載入預設賽程檔案');
-          return;
-        }
-
-        const file = new File([blob], 'default-schedule.xlsx', {
-          type: blob.type || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        });
-
-        const fallback = parseMmSs(config.fallback) ?? 360;
-        const newGroups = await parseExcelFile(file, fallback);
-        
-        if (newGroups.length > 0) {
-          setGroups(newGroups);
-          
-          // 自動選擇今天對應的比賽天數，若非比賽日則顯示全部
-          const todayKey = getTodayDayKey();
-          if (todayKey) {
-            setFilters(prev => ({ ...prev, daySelect: todayKey }));
-          }
-        }
-      } catch (error) {
-        logger.error('自動載入預設賽程失敗:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadDefaultSchedule();
-  }, []);
 
   // 計算篩選選項
   const filterOptions = useMemo(() => {
