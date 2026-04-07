@@ -759,7 +759,7 @@ const SwimmingSchedule = () => {
       return;
     }
 
-    const base = new Date();
+    const base = getDayDate(targetGroup.dayKey);
     const d = parseTimeInputToDate(base, time);
 
     logger.log('=== 更新實際結束時間 ===');
