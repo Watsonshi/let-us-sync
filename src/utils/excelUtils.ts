@@ -8,10 +8,8 @@ import { logger } from '@/lib/logger';
 const REQUIRED_HEADERS = ['項次', '組次', '年齡組', '性別', '比賽項目', '姓名', '單位', '報名成績'];
 
 const DAY_RULES = [
-  { key: 'd1', label: '第一天（115/4/2，四）', start: 1, end: 8, month: 4, day: 2 },
-  { key: 'd2', label: '第二天（115/4/3，五）', start: 9, end: 26, month: 4, day: 3 },
-  { key: 'd3', label: '第三天（115/4/4，六）', start: 27, end: 50, month: 4, day: 4 },
-  { key: 'd4', label: '第四天（115/4/5，日）', start: 51, end: 74, month: 4, day: 5 },
+  { key: 'd1', label: '第一天（115/4/11，六）', start: 1, end: 100, month: 4, day: 11 },
+  { key: 'd2', label: '第二天（115/4/12，日）', start: 111, end: 204, month: 4, day: 12 },
 ];
 
 /** 根據今天日期自動判斷對應的比賽天數 key，找不到則回傳第一天 */
