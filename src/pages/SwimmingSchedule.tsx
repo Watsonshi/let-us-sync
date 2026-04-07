@@ -941,7 +941,7 @@ const SwimmingSchedule = () => {
             icon={BarChart3}
             emoji="📊"
             title="尚未載入賽程資料"
-            description="請上傳 Excel 檔案以載入賽程資料"
+            description="請載入預設賽程或上傳 Excel 檔案"
           />
         )}
       </div>
