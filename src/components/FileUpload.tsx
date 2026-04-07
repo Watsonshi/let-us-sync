@@ -6,11 +6,12 @@ import { Upload, FileSpreadsheet, X } from 'lucide-react';
 
 interface FileUploadProps {
   onFileSelect: (file: File) => void;
+  onLoadDefault: () => void;
   onLoadPlayerList: () => void;
   isLoading: boolean;
 }
 
-export const FileUpload = ({ onFileSelect, onLoadPlayerList, isLoading }: FileUploadProps) => {
+export const FileUpload = ({ onFileSelect, onLoadDefault, onLoadPlayerList, isLoading }: FileUploadProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
@@ -49,6 +50,15 @@ export const FileUpload = ({ onFileSelect, onLoadPlayerList, isLoading }: FileUp
     <Card className="shadow-custom-md">
       <CardContent className="p-6">
         <div className="flex flex-col sm:flex-row gap-4 items-center">
+          <Button
+            onClick={onLoadDefault}
+            disabled={isLoading}
+            className="bg-gradient-primary hover:shadow-custom-glow transition-all duration-300 flex items-center gap-2"
+          >
+            <FileSpreadsheet className="w-4 h-4" />
+            {isLoading ? '載入中...' : '載入預設賽程'}
+          </Button>
+          
           <Button
             onClick={onLoadPlayerList}
             disabled={isLoading}
@@ -96,7 +106,7 @@ export const FileUpload = ({ onFileSelect, onLoadPlayerList, isLoading }: FileUp
         </div>
         
         <p className="text-xs text-muted-foreground mt-3">
-          選擇Excel檔案上傳賽程資料（支援.xlsx或.csv格式），或點擊「載入選手名單」。
+          點擊「載入預設賽程」自動載入游泳比賽資料，或選擇其他Excel檔案（支援.xlsx或.csv格式）。
         </p>
       </CardContent>
     </Card>

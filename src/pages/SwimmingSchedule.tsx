@@ -69,6 +69,61 @@ const SwimmingSchedule = () => {
     pollingInterval: 30000,
   });
 
+  // 自動載入預設賽程（從 default-schedule.xlsx）
+  useEffect(() => {
+    const loadDefaultSchedule = async () => {
+      try {
+        setIsLoading(true);
+        
+        const baseUrl = import.meta.env.BASE_URL || '/';
+        const candidateUrls = [
+          `${baseUrl}default-schedule.xlsx`,
+          `/default-schedule.xlsx`,
+        ];
+
+        let blob: Blob | null = null;
+        for (const url of candidateUrls) {
+          try {
+            const res = await fetch(url);
+            if (res.ok) {
+              blob = await res.blob();
+              break;
+            }
+          } catch {
+            // 繼續嘗試下一個 URL
+          }
+        }
+
+        if (!blob) {
+          logger.warn('無法載入預設賽程檔案');
+          return;
+        }
+
+        const file = new File([blob], 'default-schedule.xlsx', {
+          type: blob.type || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        });
+
+        const fallback = parseMmSs(config.fallback) ?? 360;
+        const newGroups = await parseExcelFile(file, fallback);
+        
+        if (newGroups.length > 0) {
+          setGroups(newGroups);
+          
+          // 自動選擇今天對應的比賽天數，若非比賽日則顯示全部
+          const todayKey = getTodayDayKey();
+          if (todayKey) {
+            setFilters(prev => ({ ...prev, daySelect: todayKey }));
+          }
+        }
+      } catch (error) {
+        logger.error('自動載入預設賽程失敗:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadDefaultSchedule();
+  }, []);
 
   // 計算篩選選項
   const filterOptions = useMemo(() => {
@@ -173,11 +228,9 @@ const SwimmingSchedule = () => {
     // 先基於完整資料計算所有時間
     const getDayStartTime = (dayKey: string) => {
       switch (dayKey) {
-        case 'd1': return '13:00';
-        case 'd2': return '08:30';
-        case 'd3': return '08:30';
-        case 'd4': return '08:30';
-        default: return '08:15';
+        case 'd1': return '08:00';
+        case 'd2': return '08:00';
+        default: return '08:00';
       }
     };
 
@@ -237,7 +290,7 @@ const SwimmingSchedule = () => {
       cursor = skipLunchIfNeeded(cursor);
 
       // 固定開賽時間覆蓋：強制指定項次在特定時間開賽
-      const FIXED_START_EVENTS: Record<number, string> = { 20: '14:30', 39: '13:30', 62: '13:30' };
+      const FIXED_START_EVENTS: Record<number, string> = {};
       if (FIXED_START_EVENTS[g.eventNo] && g.heatNum === 1) {
         const fixedTime = parseTimeInputToDate(base, FIXED_START_EVENTS[g.eventNo]);
         cursor = fixedTime;
@@ -638,6 +691,40 @@ const SwimmingSchedule = () => {
   };
 
 
+  const handleLoadDefault = async () => {
+    try {
+      setIsLoading(true);
+      const baseUrl = import.meta.env.BASE_URL || '/';
+      const candidateUrls = Array.from(
+        new Set([`${baseUrl}default-schedule.xlsx`, `/default-schedule.xlsx`]),
+      );
+      let blob: Blob | null = null;
+      let lastError: Error | null = null;
+      for (const url of candidateUrls) {
+        try {
+          const res = await fetch(url);
+          if (res.ok) { blob = await res.blob(); break; }
+          lastError = new Error(`無法載入：${url} (HTTP ${res.status})`);
+        } catch (e) {
+          lastError = new Error(`無法載入：${url} (${e instanceof Error ? e.message : '未知錯誤'})`);
+        }
+      }
+      if (!blob) throw lastError ?? new Error('無法載入預設賽程檔案');
+      const file = new File([blob], 'default-schedule.xlsx', {
+        type: blob.type || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      });
+      const fallback = parseMmSs(config.fallback) ?? 360;
+      const newGroups = await parseExcelFile(file, fallback);
+      setGroups(newGroups);
+      const maxEventNo = Math.max(...newGroups.map(g => g.eventNo));
+      toast({ title: "預設賽程載入成功", description: `成功載入 ${newGroups.length} 組（項次 1-${maxEventNo}）` });
+    } catch (error) {
+      toast({ title: "載入失敗", description: `${error instanceof Error ? error.message : '未知錯誤'}`, variant: "destructive" });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleActualEndChange = async (groupIndex: number, time: string) => {
     // 非管理員不能修改
     if (!isAdmin) {
@@ -785,6 +872,7 @@ const SwimmingSchedule = () => {
         {isAdmin && (
           <FileUpload
             onFileSelect={handleFileSelect}
+            onLoadDefault={handleLoadDefault}
             onLoadPlayerList={handleLoadPlayerList}
             isLoading={isLoading}
           />
@@ -853,7 +941,7 @@ const SwimmingSchedule = () => {
             icon={BarChart3}
             emoji="📊"
             title="尚未載入賽程資料"
-            description="請上傳 Excel 檔案以載入賽程資料"
+            description="請載入預設賽程或上傳 Excel 檔案"
           />
         )}
       </div>
