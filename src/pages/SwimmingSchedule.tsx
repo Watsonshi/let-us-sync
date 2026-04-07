@@ -269,8 +269,9 @@ const SwimmingSchedule = () => {
     allSorted.forEach((g, i) => {
       if (g.dayLabel && g.dayLabel !== currentDay) {
         currentDay = g.dayLabel;
+        const dayBase = getDayDate(g.dayKey);
         const dayStartTime = getDayStartTime(g.dayKey);
-        cursor = parseTimeInputToDate(base, dayStartTime);
+        cursor = parseTimeInputToDate(dayBase, dayStartTime);
       }
 
       // 確保 cursor 已初始化（防止第一筆資料沒有 dayLabel 的情況）
