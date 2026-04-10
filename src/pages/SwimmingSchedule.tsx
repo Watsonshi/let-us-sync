@@ -38,7 +38,7 @@ const SwimmingSchedule = () => {
   const [players, setPlayers] = useState<PlayerData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [config, setConfig] = useState<ScheduleConfig>({
-    turnover: 20,
+    turnover: 45,
     fallback: '06:00',
   });
   const [filters, setFilters] = useState<FilterOptions>({
