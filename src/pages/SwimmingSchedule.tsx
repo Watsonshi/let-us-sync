@@ -292,7 +292,7 @@ const SwimmingSchedule = () => {
       cursor = skipLunchIfNeeded(cursor);
 
       // 固定開賽時間覆蓋：強制指定項次在特定時間開賽
-      const FIXED_START_EVENTS: Record<number, string> = { 49: '13:00' };
+      const FIXED_START_EVENTS: Record<number, string> = { 49: '13:00', 143: '12:20' };
       if (FIXED_START_EVENTS[g.eventNo] && g.heatNum === 1) {
         const dayBase = getDayDate(g.dayKey);
         const fixedTime = parseTimeInputToDate(dayBase, FIXED_START_EVENTS[g.eventNo]);
